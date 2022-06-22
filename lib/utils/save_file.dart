@@ -28,13 +28,15 @@ class SaveFile {
             }
           }
           newPath = "$newPath/GenInvo";
-          final now = DateTime.now();
           var date = DateTime.parse(
               "${invoiceData.date!.split("-")[2]}-${invoiceData.date!.split("-")[1]}-${invoiceData.date!.split("-")[0]}");
-          if (date.isAfter(DateTime(now.year, 3, 31)) &&
-              date.isBefore(DateTime(now.year + 1, 4, 1))) {
+          if (date.isAfter(DateTime(date.year, 3, 31)) &&
+              date.isBefore(DateTime(date.year + 1, 4, 1))) {
             newPath =
-                "$newPath/FY-${DateTime.now().year}-${DateTime.now().year + 1}/${SaveFile().getMonth(now.month.toString())}";
+                "$newPath/FY-${date.year}-${date.year + 1}/${SaveFile().getMonth(date.month.toString())}";
+          } else {
+            newPath =
+                "$newPath/FY-${date.year - 1}-${date.year}/${SaveFile().getMonth(date.month.toString())}";
           }
           directory = Directory(newPath);
           // print(directory);
