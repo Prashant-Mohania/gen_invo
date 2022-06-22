@@ -26,7 +26,6 @@ class _InvoiceViewState extends State<InvoiceView> {
         .getInvoiceById(widget.invoiceId)
         .then((value) {
       invoice = value;
-      // print(isLoad);
       SaveFile.saveFile(context, "${invoice.id}_${invoice.name}", invoice)
           .then((value) {
         if (value) {
@@ -39,7 +38,6 @@ class _InvoiceViewState extends State<InvoiceView> {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Invoice not saved")));
           Navigator.pop(context);
-          print("File not saved");
         }
       });
     });

@@ -136,14 +136,11 @@ CREATE TABLE invoice (
 
   Future<List<InvoiceResultModel>> getInvoiceList() async {
     final db = await instance.database;
-    // final res = await db.query("invoice");
-    // // print(res);
     final res = await db.rawQuery("""
 SELECT * FROM invoice
 LEFT JOIN party ON invoice.pId = party.partyId
 LEFT JOIN item ON invoice.iId = item.itemId
 """);
-    // print(res);
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 
@@ -166,7 +163,6 @@ LEFT JOIN party ON invoice.pId = party.partyId
 LEFT JOIN item ON invoice.iId = item.itemId
 WHERE id = $id
 """);
-    // print(res);
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList().first;
   }
 }

@@ -17,7 +17,6 @@ class SaveFile {
         if (await SaveFile()._requestPermission()) {
           directory = await getExternalStorageDirectory();
           String newPath = "";
-          // print(directory);
           List<String> paths = directory!.path.split("/");
           for (int x = 1; x < paths.length; x++) {
             String folder = paths[x];
@@ -39,7 +38,6 @@ class SaveFile {
                 "$newPath/FY-${date.year - 1}-${date.year}/${SaveFile().getMonth(date.month.toString())}";
           }
           directory = Directory(newPath);
-          // print(directory);
         } else {
           return false;
         }
@@ -49,13 +47,10 @@ class SaveFile {
       }
       if (await directory.exists()) {
         File saveFile = File("${directory.path}/$fileName.pdf");
-        print(directory);
 
         await saveFile.writeAsBytes(
             await generateInvoice(PdfPageFormat.a4, invoiceData),
             flush: true);
-
-        print(directory);
 
         return true;
       }
@@ -65,7 +60,6 @@ class SaveFile {
           content: Text("Error: $e"),
         ),
       );
-      print(e);
     }
     return false;
   }
@@ -90,25 +84,6 @@ class SaveFile {
       await Permission.storage.request();
       return await Permission.storage.isGranted;
     }
-    DeviceInfoPlugin().androidInfo.then((info) async {
-      if (info.version.sdkInt! <= 29) {
-        print(30);
-        if (await Permission.storage.isGranted) {
-          print(31);
-          return true;
-        } else {
-          print(32);
-          await Permission.storage.request();
-          return await Permission.storage.isGranted;
-        }
-      } else if (info.version.sdkInt! >= 30) {
-        print(29);
-        if (await Permission.storage.isGranted) {
-          return true;
-        } else {}
-      }
-    });
-    return false;
   }
 
   String getMonth(String month) {
