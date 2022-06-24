@@ -129,6 +129,7 @@ class _AddInvoiceState extends State<AddInvoice> {
         .fetchItemList()
         .then((value) {
       itemList = Provider.of<ItemChangeNotifier>(context, listen: false).lst;
+      defaultItem = ItemModel(title: "");
       for (var element in itemList) {
         if (element.isDefault == 1) {
           defaultItem = element;
@@ -297,6 +298,17 @@ class _AddInvoiceState extends State<AddInvoice> {
                             return Container(
                               padding: const EdgeInsets.all(20),
                               child: const Text("No Items"),
+                            );
+                          }
+                          if (defaultItem.title!.isEmpty) {
+                            return InkWell(
+                              onTap: () {
+                                itemDialog();
+                              },
+                              child: Container(
+                                padding: const EdgeInsets.all(20),
+                                child: const Text("No Default Items selected"),
+                              ),
                             );
                           }
                           return Card(

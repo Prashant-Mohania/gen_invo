@@ -3,6 +3,7 @@ import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/screens/InvoicePage/add_invoice_page.dart';
 import 'package:gen_invo/screens/InvoicePage/invoice_view.dart';
 import 'package:gen_invo/widgets/my_drawer.dart';
+import 'package:gen_invo/widgets/party_search.dart';
 import 'package:provider/provider.dart';
 
 class InvoicePage extends StatelessWidget {
@@ -14,6 +15,16 @@ class InvoicePage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Invoice"),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  final temp =
+                      Provider.of<InvoiceChangeNotifier>(context, listen: false)
+                          .lst;
+                  showSearch(context: context, delegate: PartySearch(temp));
+                },
+                icon: const Icon(Icons.search)),
+          ],
         ),
         drawer: const MyDrawer(),
         floatingActionButton: FloatingActionButton(
@@ -65,7 +76,7 @@ class InvoicePage extends StatelessWidget {
                           );
                         },
                         title: Text(
-                            "${invoices.lst[index].id!}_${invoices.lst[index].name!}"),
+                            "${invoices.lst[index].id!}_${invoices.lst[index].name ?? "No Name"}"),
                         subtitle:
                             Text(invoices.lst[index].netBalance!.toString()),
                       ),

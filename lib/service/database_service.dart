@@ -3,6 +3,7 @@ import 'package:gen_invo/Models/party_model.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
+import '../Models/company_model.dart';
 import '../Models/invoice_model.dart';
 import '../Models/invoice_result_model.dart';
 
@@ -72,6 +73,23 @@ CREATE TABLE invoice (
   netBalance INTEGER NOT NULL
   )
 ''');
+
+    await db.execute('''
+CREATE TABLE company (
+  id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
+  name TEXT NOT NULL,
+  gstNumber TEXT NOT NULL,
+  phoneNumber INTEGER NOT NULL,
+  address TEXT NOT NULL,
+  city TEXT NOT NULL,
+  state TEXT NOT NULL,
+  stateCode INTEGER NOT NULL,
+  bankName TEXT NOT NULL,
+  accountNumber INTEGER NOT NULL,
+  ifscCode TEXT NOT NULL,
+  bankAddress TEXT NOT NULL
+  )
+''');
   }
 
   // ------------------------------------------------- Party CRUD -------------------------------
@@ -96,7 +114,7 @@ CREATE TABLE invoice (
   Future<void> updateParty(PartyModel party) async {
     final db = await instance.database;
     await db.update("party", party.toJson(),
-        where: "id = ?", whereArgs: [party.partyId]);
+        where: "partyId = ?", whereArgs: [party.partyId]);
   }
 
   // ------------------------------------------- Item CRUD ------------------------------
@@ -164,5 +182,19 @@ LEFT JOIN item ON invoice.iId = item.itemId
 WHERE id = $id
 """);
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList().first;
+  }
+
+  // ------------------------------------------- Company CRUD --------------------------------
+
+  getCompanyDetails() async {
+    final db = await instance.database;
+    final res = await db.query("company");
+    return res.map((e) => CompanyModel.fromJson(e)).toList();
+  }
+
+  Future<CompanyModel> insertCompanyData(CompanyModel company) async {
+    final db = await instance.database;
+    final id = await db.insert("company", company.toJson());
+    return company.copyWith(id: id);
   }
 }

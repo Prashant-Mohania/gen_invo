@@ -31,6 +31,11 @@ class PartyDetailsPage extends StatelessWidget {
               ),
               const Divider(thickness: 1),
               Text(
+                "Address:-  ${party.address}",
+                style: const TextStyle(fontSize: 20),
+              ),
+              const Divider(thickness: 1),
+              Text(
                 "Email:-  ${party.email}",
                 style: const TextStyle(fontSize: 20),
               ),

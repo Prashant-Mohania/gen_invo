@@ -1,5 +1,8 @@
 import 'dart:typed_data';
 
+import 'package:gen_invo/Models/company_model.dart';
+import 'package:gen_invo/service/database_service.dart';
+import 'package:number_to_words/number_to_words.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
@@ -9,6 +12,8 @@ import '../Models/invoice_result_model.dart';
 Future<Uint8List> generateInvoice(
     PdfPageFormat pageFormat, InvoiceResultModel invoiceData) async {
   // final lorem = pw.LoremText();
+  final res = await DatabaseService.instance.getCompanyDetails();
+  CompanyModel companyData = res[0];
 
   final products = <Product>[
     Product(
@@ -21,7 +26,6 @@ Future<Uint8List> generateInvoice(
     const Product("", "", "", "", "", ""),
     const Product("", "", "", "", "", ""),
     const Product("", "", "", "", "", ""),
-    const Product("", "", "", "", "", ""),
   ];
 
   final invoice = Invoice(
@@ -29,14 +33,10 @@ Future<Uint8List> generateInvoice(
     products: products,
     customerName: invoiceData.name!,
     customerAddress: invoiceData.address!,
-    paymentInfo:
-        '4509 Wiseman Street\nKnoxville, Tennessee(TN), 37929\n865-372-0425',
-    tax: .15,
-    baseColor: PdfColors.teal,
-    accentColor: PdfColors.blueGrey900,
+    customerGST: invoiceData.gst!.toString(),
   );
 
-  return await invoice.buildPdf(pageFormat, invoiceData);
+  return await invoice.buildPdf(pageFormat, invoiceData, companyData);
 }
 
 class Invoice {
@@ -45,25 +45,19 @@ class Invoice {
     required this.customerName,
     required this.customerAddress,
     required this.invoiceNumber,
-    required this.tax,
-    required this.paymentInfo,
-    required this.baseColor,
-    required this.accentColor,
+    required this.customerGST,
   });
 
   final List<Product> products;
   final String customerName;
   final String customerAddress;
   final String invoiceNumber;
-  final double tax;
-  final String paymentInfo;
-  final PdfColor baseColor;
-  final PdfColor accentColor;
+  final String customerGST;
 
   static const _darkColor = PdfColors.blueGrey800;
 
-  Future<Uint8List> buildPdf(
-      PdfPageFormat pageFormat, InvoiceResultModel invoiceData) async {
+  Future<Uint8List> buildPdf(PdfPageFormat pageFormat,
+      InvoiceResultModel invoiceData, CompanyModel companyData) async {
     final doc = pw.Document();
 
     doc.addPage(
@@ -74,13 +68,13 @@ class Invoice {
           await PdfGoogleFonts.robotoBold(),
           await PdfGoogleFonts.robotoItalic(),
         ),
-        header: (context) => _buildHeader(context, invoiceData),
+        header: (context) => _buildHeader(context, invoiceData, companyData),
         footer: _buildFooter,
         build: (context) => [
           _contentHeader(context, invoiceData),
           _contentTable(context),
-          _contentFooter(context, invoiceData),
-          _termsAndConditions(context),
+          _contentFooter(context, invoiceData, companyData),
+          _termsAndConditions(context, companyData),
         ],
       ),
     );
@@ -89,9 +83,9 @@ class Invoice {
     return doc.save();
   }
 
-  pw.Widget _buildHeader(pw.Context context, InvoiceResultModel invoiceData) {
+  pw.Widget _buildHeader(pw.Context context, InvoiceResultModel invoiceData,
+      CompanyModel companyData) {
     return pw.Container(
-      padding: const pw.EdgeInsets.symmetric(horizontal: 5),
       decoration: pw.BoxDecoration(border: pw.Border.all()),
       child: pw.Column(
         children: [
@@ -100,7 +94,7 @@ class Invoice {
             children: [
               pw.Container(
                 child: pw.Text(
-                  'GSTIN: 09AAAFH8944G1Z6',
+                  '  GSTIN: ${companyData.gstNumber}',
                   style: pw.TextStyle(
                     color: PdfColors.red,
                     fontWeight: pw.FontWeight.bold,
@@ -110,7 +104,7 @@ class Invoice {
               pw.Spacer(),
               pw.Container(
                 child: pw.Text(
-                  'Phone: 6713141',
+                  'Phone: ${companyData.phoneNumber}  ',
                   style: pw.TextStyle(
                     fontWeight: pw.FontWeight.bold,
                   ),
@@ -124,7 +118,7 @@ class Invoice {
             textAlign: pw.TextAlign.center,
           ),
           pw.Text(
-            "Hiralal & Brothers",
+            "${companyData.name}",
             style: pw.TextStyle(
                 fontWeight: pw.FontWeight.bold,
                 fontSize: 36,
@@ -132,47 +126,49 @@ class Invoice {
             textAlign: pw.TextAlign.center,
           ),
           pw.Text(
-            "28/66 Seo ka Bazar, Agra, Uttar Pradesh, India",
+            "${companyData.address}",
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             textAlign: pw.TextAlign.center,
           ),
-          pw.Table(
-            border: const pw.TableBorder(
-              top: pw.BorderSide(),
-              bottom: pw.BorderSide(),
+          pw.Container(
+            margin: const pw.EdgeInsets.symmetric(vertical: 5),
+            child: pw.Table(
+              border: const pw.TableBorder(
+                top: pw.BorderSide(),
+              ),
+              children: [
+                pw.TableRow(
+                  children: [
+                    pw.Text(" Invoice\n No."),
+                    pw.Text(invoiceData.id.toString()),
+                    pw.Text("Invoice Date:"),
+                    pw.Text(invoiceData.date!.toString()),
+                    pw.Text("Transporter\nName/Model:"),
+                    pw.Text(""),
+                  ],
+                ),
+                pw.TableRow(
+                  children: [
+                    pw.Text(" State"),
+                    pw.Text("Uttar Pradesh"),
+                    pw.Text("State Code:"),
+                    pw.Text("${companyData.stateCode}"),
+                    pw.Text("Vehicle number:"),
+                    pw.Text(""),
+                  ],
+                ),
+                pw.TableRow(
+                  children: [
+                    pw.Text(" Issued From"),
+                    pw.Text(""),
+                    pw.Text(""),
+                    pw.Text(""),
+                    pw.Text("Lr. No. & Date:"),
+                    pw.Text(""),
+                  ],
+                ),
+              ],
             ),
-            children: [
-              pw.TableRow(
-                children: [
-                  pw.Text("Invoice\nNo."),
-                  pw.Text(invoiceData.id.toString()),
-                  pw.Text("Invoice Date:"),
-                  pw.Text(invoiceData.date!.toString()),
-                  pw.Text("Transporter\nName/Model:"),
-                  pw.Text(""),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Text("State"),
-                  pw.Text("Uttar Pradesh"),
-                  pw.Text("State Code:"),
-                  pw.Text("09"),
-                  pw.Text("Vehicle number:"),
-                  pw.Text(""),
-                ],
-              ),
-              pw.TableRow(
-                children: [
-                  pw.Text("Issued From"),
-                  pw.Text(""),
-                  pw.Text(""),
-                  pw.Text(""),
-                  pw.Text("Lr. No. & Date:"),
-                  pw.Text(""),
-                ],
-              ),
-            ],
           ),
           if (context.pageNumber > 1) pw.SizedBox(height: 20)
         ],
@@ -231,8 +227,11 @@ class Invoice {
                 pw.TableRow(
                   children: [
                     pw.Padding(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 5),
+                      padding: const pw.EdgeInsets.all(5),
                       child: pw.Table(
+                        border: const pw.TableBorder(
+                            verticalInside: pw.BorderSide(
+                                width: 1, style: pw.BorderStyle.solid)),
                         children: [
                           pw.TableRow(
                             children: [
@@ -241,7 +240,7 @@ class Invoice {
                                 textAlign: pw.TextAlign.left,
                               ),
                               pw.Text(
-                                customerName,
+                                " $customerName",
                                 textAlign: pw.TextAlign.left,
                               ),
                             ],
@@ -252,7 +251,7 @@ class Invoice {
                               textAlign: pw.TextAlign.left,
                             ),
                             pw.Text(
-                              customerAddress,
+                              " $customerAddress",
                               textAlign: pw.TextAlign.left,
                             ),
                           ]),
@@ -262,7 +261,7 @@ class Invoice {
                               textAlign: pw.TextAlign.left,
                             ),
                             pw.Text(
-                              "",
+                              " $customerGST",
                               textAlign: pw.TextAlign.left,
                             ),
                           ]),
@@ -276,7 +275,7 @@ class Invoice {
                                   pw.MainAxisAlignment.spaceBetween,
                               children: [
                                 pw.Text(
-                                  invoiceData.state!,
+                                  " ${invoiceData.state!}",
                                   textAlign: pw.TextAlign.left,
                                 ),
                                 pw.Text(
@@ -299,9 +298,12 @@ class Invoice {
                         ],
                       ),
                     ),
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.symmetric(horizontal: 5),
+                    pw.Container(
+                      margin: const pw.EdgeInsets.all(5),
                       child: pw.Table(
+                        border: const pw.TableBorder(
+                            verticalInside: pw.BorderSide(
+                                width: 1, style: pw.BorderStyle.solid)),
                         children: [
                           pw.TableRow(
                             children: [
@@ -349,11 +351,21 @@ class Invoice {
                                   textAlign: pw.TextAlign.left,
                                 ),
                                 pw.Text(
-                                  "State Code: ${09}",
+                                  "State Code:    ",
                                   textAlign: pw.TextAlign.left,
                                 ),
                               ],
-                            )
+                            ),
+                          ]),
+                          pw.TableRow(children: [
+                            pw.Text(
+                              '.',
+                              textAlign: pw.TextAlign.left,
+                            ),
+                            pw.Text(
+                              "",
+                              textAlign: pw.TextAlign.left,
+                            ),
                           ]),
                         ],
                       ),
@@ -366,7 +378,8 @@ class Invoice {
     );
   }
 
-  pw.Widget _contentFooter(pw.Context context, InvoiceResultModel invoiceData) {
+  pw.Widget _contentFooter(pw.Context context, InvoiceResultModel invoiceData,
+      CompanyModel companyData) {
     return pw.Container(
       decoration: pw.BoxDecoration(border: pw.Border.all()),
       child: pw.Row(
@@ -393,12 +406,14 @@ class Invoice {
                           textAlign: pw.TextAlign.left,
                         ),
                         pw.Text(
-                          "",
-                          textAlign: pw.TextAlign.left,
+                          NumberToWord()
+                              .convert("en-in", invoiceData.netAmount!)
+                              .toTitleCase(),
+                          style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         ),
                       ],
                     ),
-                    pw.SizedBox(height: 10),
+                    pw.SizedBox(height: 30),
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
@@ -406,42 +421,48 @@ class Invoice {
                           "Our Bank Details:",
                         ),
                         pw.Text(
-                          "Bank- Central Bank of India - Favvara Branch, Agra",
+                          "${companyData.bankName} - ${companyData.bankAddress}",
+                          // "Bank- Central Bank of India - Favvara Branch, Agra",
                           textAlign: pw.TextAlign.left,
                         ),
                         pw.Text(
-                          "Account No.//IFSC- 1525687806 / CBIN00001525",
+                          "Account No./IFSC- ${companyData.accountNumber} / ${companyData.ifscCode}",
                           textAlign: pw.TextAlign.left,
                         ),
                       ],
                     ),
-                    pw.SizedBox(height: 10),
+                    pw.SizedBox(height: 20),
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.RichText(
                           text: pw.TextSpan(
-                              text: "Payment Received in Cash/Cheque: ",
+                              text: "Payment Received in Cash/Bank: ",
                               children: [
                                 pw.TextSpan(
-                                  text: "By Cheque",
+                                  text: invoiceData.isCash == 1 &&
+                                          invoiceData.isBank == 1
+                                      ? "By Cash and Bank"
+                                      : invoiceData.isCash == 1
+                                          ? "By Cash"
+                                          : "By Bank",
                                   style: pw.TextStyle(
                                     fontWeight: pw.FontWeight.bold,
                                   ),
                                 )
                               ]),
                         ),
-                        pw.RichText(
-                          text:
-                              pw.TextSpan(text: "Cheque Details: ", children: [
-                            pw.TextSpan(
-                              text: "union bank-039904",
-                              style: pw.TextStyle(
-                                fontWeight: pw.FontWeight.bold,
-                              ),
-                            )
-                          ]),
-                        ),
+                        // pw.RichText(
+                        //   text:
+                        //       pw.TextSpan(text: "Cheque Details: ", children: [
+                        //     pw.TextSpan(
+                        //       text: "union bank-039904",
+                        //       style: pw.TextStyle(
+                        //         fontWeight: pw.FontWeight.bold,
+                        //       ),
+                        //     )
+                        //   ]),
+                        // ),
                       ],
                     )
                   ],
@@ -461,122 +482,150 @@ class Invoice {
                 children: [
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "other Charges, if any",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " other Charges, if any",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        "",
-                        textAlign: pw.TextAlign.left,
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Text(
-                        "Total Amount -before TAX",
-                        textAlign: pw.TextAlign.left,
-                      ),
-                      pw.Text(
-                        invoiceData.totalCost.toString(),
+                        " ",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
                   ),
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "CGST",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Total Amount -before TAX",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        invoiceData.cgst.toString(),
-                        textAlign: pw.TextAlign.left,
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Text(
-                        "SGST",
-                        textAlign: pw.TextAlign.left,
-                      ),
-                      pw.Text(
-                        invoiceData.sgst.toString(),
+                        " ${invoiceData.totalCost}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
                   ),
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "IGST",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " CGST",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        invoiceData.igst.toString(),
-                        textAlign: pw.TextAlign.left,
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Text(
-                        "Round Off / Discount",
-                        textAlign: pw.TextAlign.left,
-                      ),
-                      pw.Text(
-                        (invoiceData.totalAmountWIthRounding! -
-                                invoiceData.totalAmountWIthoutRounding!)
-                            .toStringAsFixed(2),
+                        " ${invoiceData.cgst}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
                   ),
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "Total amount after tax (Rounded)",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " SGST",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        invoiceData.totalAmountWIthRounding!.toString(),
-                        textAlign: pw.TextAlign.left,
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Text(
-                        "Received (By Cash)",
-                        textAlign: pw.TextAlign.left,
-                      ),
-                      pw.Text(
-                        invoiceData.receivedInCash.toString(),
+                        " ${invoiceData.sgst}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
                   ),
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "Received (By Bank)",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " IGST",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        invoiceData.receivedInBank.toString(),
+                        " ${invoiceData.igst}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
                   ),
                   pw.TableRow(
                     children: [
-                      pw.Text(
-                        "Balance",
-                        textAlign: pw.TextAlign.left,
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Round Off / Discount",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
                       pw.Text(
-                        invoiceData.netAmount.toString(),
+                        " ${(invoiceData.totalAmountWIthRounding! - invoiceData.totalAmountWIthoutRounding!).toStringAsFixed(2)}",
+                        textAlign: pw.TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Total amount after tax (Rounded)",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Text(
+                        " ${invoiceData.totalAmountWIthRounding!}",
+                        textAlign: pw.TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Received (By Cash)",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Text(
+                        " ${invoiceData.receivedInCash}",
+                        textAlign: pw.TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Received (By Bank)",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Text(
+                        " ${invoiceData.receivedInBank}",
+                        textAlign: pw.TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          " Balance",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Text(
+                        " ${(invoiceData.netAmount! - invoiceData.receivedInCash!)}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
@@ -590,14 +639,14 @@ class Invoice {
     );
   }
 
-  pw.Widget _termsAndConditions(pw.Context context) {
+  pw.Widget _termsAndConditions(pw.Context context, CompanyModel companyData) {
     return pw.Column(
       children: [
         pw.Container(
           padding: const pw.EdgeInsets.symmetric(horizontal: 5, vertical: 10),
           decoration: pw.BoxDecoration(border: pw.Border.all()),
           child: pw.Text(
-            "TERMS & CONDITIONS : ${pw.LoremText().paragraph(40)}",
+            "TERMS & CONDITIONS : 1. GOODS once Sold will not be returned. 2. Interest @24% shall be changed on all over due payments from the date of invoice. 3. Our responsibility ceases as soon as the goods are handled over to the carrier. 4. Payment to be made throught RTGS/NEFT only. 5. Subject to ${companyData.city} Jurisdiction only.",
             textAlign: pw.TextAlign.justify,
             style: const pw.TextStyle(
               fontSize: 10,
@@ -607,7 +656,12 @@ class Invoice {
           ),
         ),
         pw.Table(
-          border: pw.TableBorder.all(),
+          border: const pw.TableBorder(
+            left: pw.BorderSide(width: 01),
+            right: pw.BorderSide(width: 01),
+            bottom: pw.BorderSide(width: 01),
+            verticalInside: pw.BorderSide(width: 01),
+          ),
           children: [
             pw.TableRow(
               children: [
@@ -648,8 +702,9 @@ class Invoice {
         right: pw.BorderSide(color: PdfColors.black),
       ),
       cellAlignment: pw.Alignment.centerLeft,
-      headerDecoration:
-          pw.BoxDecoration(border: pw.Border.all(color: PdfColors.black)),
+      headerDecoration: pw.BoxDecoration(
+        border: pw.Border.all(color: PdfColors.black),
+      ),
       headerHeight: 25,
       cellHeight: 40,
       cellAlignments: {
@@ -660,10 +715,9 @@ class Invoice {
         4: pw.Alignment.center,
         5: pw.Alignment.center,
       },
-      headerStyle: pw.TextStyle(
+      headerStyle: const pw.TextStyle(
         color: PdfColors.black,
         fontSize: 10,
-        fontWeight: pw.FontWeight.bold,
       ),
       // cellStyle: const pw.TextStyle(
       //   color: _darkColor,
@@ -725,5 +779,34 @@ class Product {
         return total;
     }
     return '';
+  }
+}
+
+String convertToTitleCase(String text) {
+  if (text.length <= 1) {
+    return text.toUpperCase();
+  }
+
+  // Split string into multiple words
+  final List<String> words = text.split(' ');
+
+  // Capitalize first letter of each words
+  final capitalizedWords = words.map((word) {
+    if (word.trim().isNotEmpty) {
+      final String firstLetter = word.trim().substring(0, 1).toUpperCase();
+      final String remainingLetters = word.trim().substring(1);
+
+      return '$firstLetter$remainingLetters';
+    }
+    return '';
+  });
+
+  // Join/Merge all words back to one String
+  return capitalizedWords.join(' ');
+}
+
+extension CapitalizedStringExtension on String {
+  String toTitleCase() {
+    return convertToTitleCase(this);
   }
 }

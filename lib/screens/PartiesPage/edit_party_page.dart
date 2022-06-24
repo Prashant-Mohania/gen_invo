@@ -22,6 +22,7 @@ class _EditPartyPageState extends State<EditPartyPage> {
   TextEditingController cityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
   TextEditingController gstController = TextEditingController();
+  TextEditingController addressController = TextEditingController();
 
   bool isLoad = false;
 
@@ -80,7 +81,24 @@ class _EditPartyPageState extends State<EditPartyPage> {
                     ),
                     const SizedBox(height: 10),
                     TextFormField(
+                      controller: addressController,
+                      decoration: const InputDecoration(
+                        labelText: 'Address',
+                        border: OutlineInputBorder(),
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    TextFormField(
                       controller: emailController,
+                      validator: (val) {
+                        bool emailValid = RegExp(
+                                r"^[a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+")
+                            .hasMatch(val!);
+                        if (!emailValid && val.isNotEmpty) {
+                          return "Invalid Email";
+                        }
+                        return null;
+                      },
                       decoration: const InputDecoration(
                         labelText: 'Email',
                         border: OutlineInputBorder(),
@@ -139,6 +157,7 @@ class _EditPartyPageState extends State<EditPartyPage> {
                             city: cityController.text,
                             state: stateController.text,
                             gst: gstController.text,
+                            address: addressController.text,
                           );
                           Provider.of<PartyChangeNotifier>(context,
                                   listen: false)
