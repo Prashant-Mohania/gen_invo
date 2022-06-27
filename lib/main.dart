@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gen_invo/service/local_database.dart';
 import 'package:provider/provider.dart';
 
 import 'Models/invoice_change_notifier.dart';
 import 'Models/item_change_notifier.dart';
 import 'Models/party_change_notifier.dart';
 import 'screens/InvoicePage/invoice_page.dart';
+import 'screens/SetupPage/setup_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -17,8 +19,29 @@ void main() async {
   runApp(const MyApp());
 }
 
-class MyApp extends StatelessWidget {
+class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
+
+  @override
+  State<MyApp> createState() => _MyAppState();
+}
+
+class _MyAppState extends State<MyApp> {
+  bool isSetup = false;
+
+  getSetup() {
+    LocalDatabase.getSetup("setup").then((value) {
+      setState(() {
+        isSetup = value;
+      });
+    });
+  }
+
+  @override
+  void initState() {
+    getSetup();
+    super.initState();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -35,7 +58,7 @@ class MyApp extends StatelessWidget {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: const InvoicePage(),
+        home: isSetup ? const InvoicePage() : const SetupPage(),
       ),
     );
   }

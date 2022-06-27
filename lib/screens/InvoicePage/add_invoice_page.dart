@@ -2,7 +2,9 @@ import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/Models/invoice_model.dart';
 import 'package:gen_invo/Models/party_model.dart';
+import 'package:gen_invo/MyExtension/my_extention.dart';
 import 'package:gen_invo/screens/InvoicePage/invoice_view.dart';
+import 'package:gen_invo/service/database_service.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
@@ -11,6 +13,9 @@ import '../../Models/item_model.dart';
 import '../../Models/party_change_notifier.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/my_search_delegate.dart';
+import '../../widgets/state_dialog.dart';
+
+enum PartyType { regular, nonRegular }
 
 class AddInvoice extends StatefulWidget {
   final int invoiceNo;
@@ -37,12 +42,19 @@ class _AddInvoiceState extends State<AddInvoice> {
   TextEditingController rateController = TextEditingController();
   TextEditingController totalCostController = TextEditingController();
   TextEditingController cashAmountController = TextEditingController();
-  TextEditingController bankAmountController = TextEditingController();
+  TextEditingController upiAmountController = TextEditingController();
+  TextEditingController bankNameController = TextEditingController();
+  TextEditingController chequeAmountController = TextEditingController();
+  TextEditingController chequeNumberController = TextEditingController();
+  TextEditingController nameController = TextEditingController();
+  TextEditingController cityController = TextEditingController();
+  TextEditingController stateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool isLoad = false, isCash = false, isBank = false;
+  bool isLoad = false, isCash = false, isUPI = false, isCheque = false;
   late ItemModel defaultItem;
   late PartyModel selectedParty;
   late List<ItemModel> itemList;
+  PartyType partyType = PartyType.regular;
 
   Future<void> itemDialog() async {
     await showDialog(
@@ -77,58 +89,13 @@ class _AddInvoiceState extends State<AddInvoice> {
         });
   }
 
-  Future<String> seacrh() async {
-    TextEditingController gstController = TextEditingController();
-    String res = await showDialog(
-          context: context,
-          builder: (BuildContext context) {
-            return Dialog(
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(10),
-              ),
-              child: Padding(
-                padding: const EdgeInsets.all(20),
-                child: ListView(
-                  shrinkWrap: true,
-                  children: [
-                    const Text(
-                      "Search GST",
-                      style: TextStyle(
-                        fontSize: 20,
-                        fontWeight: FontWeight.bold,
-                      ),
-                      textAlign: TextAlign.center,
-                    ),
-                    const SizedBox(height: 10),
-                    TextField(
-                      autofocus: true,
-                      controller: gstController,
-                      decoration: const InputDecoration(
-                        hintText: "Enter GST",
-                      ),
-                    ),
-                    const SizedBox(height: 10),
-                    CustomButton(
-                      callback: () {
-                        Navigator.pop(context, gstController.text);
-                      },
-                    ),
-                  ],
-                ),
-              ),
-            );
-          },
-        ) ??
-        "";
-    return res;
-  }
-
   @override
   void initState() {
     Provider.of<ItemChangeNotifier>(context, listen: false)
         .fetchItemList()
         .then((value) {
       itemList = Provider.of<ItemChangeNotifier>(context, listen: false).lst;
+      selectedParty = PartyModel();
       defaultItem = ItemModel(title: "");
       for (var element in itemList) {
         if (element.isDefault == 1) {
@@ -138,6 +105,7 @@ class _AddInvoiceState extends State<AddInvoice> {
     });
     dateController.text = DateFormat('dd-MM-yyyy').format(DateTime.now());
     invoiceNoController.text = widget.invoiceNo.toString();
+    discountController.text = "";
     super.initState();
   }
 
@@ -159,7 +127,7 @@ class _AddInvoiceState extends State<AddInvoice> {
     rateController.dispose();
     totalCostController.dispose();
     cashAmountController.dispose();
-    bankAmountController.dispose();
+    upiAmountController.dispose();
     selectedParty = selectedParty;
     defaultItem = defaultItem;
     super.dispose();
@@ -230,50 +198,177 @@ class _AddInvoiceState extends State<AddInvoice> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      TextFormField(
-                        controller: partyNameController,
-                        readOnly: true,
-                        decoration: const InputDecoration(
-                          hintText: "Name / city",
-                          border: OutlineInputBorder(),
-                        ),
-                        onTap: () async {
-                          PartyChangeNotifier party =
-                              Provider.of<PartyChangeNotifier>(
-                            context,
-                            listen: false,
-                          );
-                          final items = Provider.of<ItemChangeNotifier>(context,
-                              listen: false);
-
-                          await party.fetchPartyList();
-
-                          var res = await showSearch(
-                                context: context,
-                                delegate: MySearch(
-                                  lst: party.lst,
-                                ),
-                              ) ??
-                              PartyModel();
-                          if (res.partyId != null) {
-                            selectedParty = res;
-                            partyNameController.text =
-                                "${res.name!} / ${res.city!}";
-
-                            double tax = selectedParty.state == "Uttar Pradesh"
-                                ? items.taxCalculation()
-                                : 0.0;
-                            subTotalController.text = totalCostController.text;
-                            csgtController.text = tax.toStringAsFixed(2);
-                            scgstController.text = tax.toStringAsFixed(2);
-
-                            double igst = selectedParty.state != "Uttar Pradesh"
-                                ? items.igstCalculation()
-                                : 0.0;
-                            igstController.text = igst.toStringAsFixed(2);
-                          }
-                        },
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text("Regular Client"),
+                          Switch(
+                              value: PartyType.regular == partyType,
+                              onChanged: (val) {
+                                setState(() {
+                                  partyType = val
+                                      ? PartyType.regular
+                                      : PartyType.nonRegular;
+                                });
+                              }),
+                        ],
                       ),
+                      const SizedBox(height: 10),
+                      partyType == PartyType.regular
+                          ? TextFormField(
+                              controller: partyNameController,
+                              readOnly: true,
+                              decoration: const InputDecoration(
+                                hintText: "Name / city",
+                                border: OutlineInputBorder(),
+                              ),
+                              onTap: () async {
+                                PartyChangeNotifier party =
+                                    Provider.of<PartyChangeNotifier>(
+                                  context,
+                                  listen: false,
+                                );
+                                final items = Provider.of<ItemChangeNotifier>(
+                                    context,
+                                    listen: false);
+
+                                await party.fetchPartyList();
+
+                                var res = await showSearch(
+                                      context: context,
+                                      delegate: MySearch(
+                                        lst: party.lst,
+                                      ),
+                                    ) ??
+                                    PartyModel();
+                                if (res.partyId != null) {
+                                  selectedParty = res;
+                                  partyNameController.text =
+                                      "${res.name!} / ${res.city!}";
+
+                                  double tax =
+                                      selectedParty.state == "Uttar Pradesh"
+                                          ? items.taxCalculation()
+                                          : 0.0;
+                                  subTotalController.text =
+                                      totalCostController.text;
+                                  csgtController.text = tax.toStringAsFixed(2);
+                                  scgstController.text = tax.toStringAsFixed(2);
+
+                                  double igst =
+                                      selectedParty.state != "Uttar Pradesh"
+                                          ? items.igstCalculation()
+                                          : 0.0;
+                                  igstController.text = igst.toStringAsFixed(2);
+                                }
+                              },
+                            )
+                          : Column(
+                              children: [
+                                TextFormField(
+                                  controller: nameController,
+                                  validator: (val) {
+                                    if (partyType == PartyType.regular) {
+                                      return null;
+                                    } else if (val!.isEmpty) {
+                                      return "Required";
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: const InputDecoration(
+                                    hintText: "Name",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      selectedParty.name = val;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                TextFormField(
+                                  controller: cityController,
+                                  validator: (val) {
+                                    if (partyType == PartyType.regular) {
+                                      return null;
+                                    } else if (val!.isEmpty) {
+                                      return "Required";
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: const InputDecoration(
+                                    hintText: "city",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onChanged: (val) {
+                                    setState(() {
+                                      selectedParty.city = val;
+                                    });
+                                  },
+                                ),
+                                const SizedBox(height: 10),
+                                TextFormField(
+                                  controller: stateController,
+                                  readOnly: true,
+                                  validator: (val) {
+                                    if (partyType == PartyType.regular) {
+                                      return null;
+                                    } else if (val!.isEmpty) {
+                                      return "Required";
+                                    } else {
+                                      return null;
+                                    }
+                                  },
+                                  decoration: const InputDecoration(
+                                    hintText: "State",
+                                    border: OutlineInputBorder(),
+                                  ),
+                                  onTap: () async {
+                                    var res = await showDialog(
+                                      context: context,
+                                      builder: (context) {
+                                        return const StateDialog();
+                                      },
+                                    );
+                                    if (res != null) {
+                                      stateController.text = res;
+                                      setState(() {
+                                        selectedParty.state = res;
+                                      });
+                                    }
+                                  },
+                                ),
+                                // const SizedBox(height: 20),
+                                // CustomButton(
+                                //   text: "Add Party",
+                                //   callback: () {
+                                //     if (nameController.text.isNotEmpty &&
+                                //         cityController.text.isNotEmpty &&
+                                //         stateController.text.isNotEmpty) {
+                                //       DatabaseService.instance
+                                //           .insertPartyData(PartyModel(
+                                //         name: nameController.text,
+                                //         city: cityController.text,
+                                //         state: stateController.text,
+                                //       ))
+                                //           .then((value) {
+                                //         partyNameController.text =
+                                //             "${value.name!} / ${value.city!}";
+                                //         setState(() {
+                                //           selectedParty = value;
+                                //           partyType = PartyType.regular;
+                                //           nameController.text = "";
+                                //           cityController.text = "";
+                                //           stateController.text = "";
+                                //         });
+                                //       });
+                                //     }
+                                //   },
+                                // )
+                              ],
+                            ),
                       const SizedBox(height: 10),
                       const Divider(),
                       const Text(
@@ -476,23 +571,74 @@ class _AddInvoiceState extends State<AddInvoice> {
                                   Row(
                                     children: [
                                       Checkbox(
-                                        value: isBank,
+                                        value: isUPI,
                                         onChanged: (bool? val) {
                                           setState(() {
-                                            isBank = val!;
+                                            isUPI = val!;
                                           });
                                         },
                                       ),
-                                      const Text("Bank")
+                                      const Text("UPI")
                                     ],
                                   ),
                                   TextFormField(
-                                    readOnly: !isBank,
+                                    readOnly: !isUPI,
                                     keyboardType: TextInputType.number,
-                                    validator: (val) => (val!.isEmpty && isBank)
+                                    validator: (val) => (val!.isEmpty && isUPI)
                                         ? "Required"
                                         : null,
-                                    controller: bankAmountController,
+                                    controller: upiAmountController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Amount",
+                                    ),
+                                  ),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isCheque,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isCheque = val!;
+                                          });
+                                        },
+                                      ),
+                                      const Text("Cheque")
+                                    ],
+                                  ),
+                                  TextFormField(
+                                    readOnly: !isCheque,
+                                    validator: (val) =>
+                                        (val!.isEmpty && isCheque)
+                                            ? "Required"
+                                            : null,
+                                    controller: bankNameController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Bank Name",
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextFormField(
+                                    readOnly: !isCheque,
+                                    keyboardType: TextInputType.number,
+                                    validator: (val) =>
+                                        (val!.isEmpty && isCheque)
+                                            ? "Required"
+                                            : null,
+                                    controller: chequeNumberController,
+                                    decoration: const InputDecoration(
+                                      hintText: "Cheque Number",
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  TextFormField(
+                                    readOnly: !isCheque,
+                                    keyboardType: TextInputType.number,
+                                    validator: (val) =>
+                                        (val!.isEmpty && isCheque)
+                                            ? "Required"
+                                            : null,
+                                    controller: chequeAmountController,
                                     decoration: const InputDecoration(
                                       hintText: "Amount",
                                     ),
@@ -611,12 +757,31 @@ class _AddInvoiceState extends State<AddInvoice> {
                       const SizedBox(height: 20),
                       CustomButton(
                           text: "Generate Invoice",
-                          callback: () {
-                            if (_formKey.currentState!.validate() &&
-                                (isCash || isBank)) {
+                          callback: () async {
+                            var id = selectedParty.partyId;
+                            if (partyType == PartyType.nonRegular) {
+                              if (nameController.text.isNotEmpty &&
+                                  cityController.text.isNotEmpty &&
+                                  stateController.text.isNotEmpty) {
+                                final res = await DatabaseService.instance
+                                    .insertPartyData(PartyModel(
+                                  name: nameController.text.toTitleCase(),
+                                  city: cityController.text.toTitleCase(),
+                                  state: stateController.text.toTitleCase(),
+                                  email: "",
+                                  mobile: "",
+                                  gst: "",
+                                  address: "",
+                                ));
+                                partyNameController.text =
+                                    "${res.name!} / ${res.city!}";
+                                id = res.partyId;
+                              }
+                            }
+                            if (_formKey.currentState!.validate()) {
                               InvoiceModel invoice = InvoiceModel(
                                 id: widget.invoiceNo,
-                                pId: selectedParty.partyId,
+                                pId: id,
                                 iId: defaultItem.itemId,
                                 date: dateController.text,
                                 weightInGrams:
@@ -634,17 +799,22 @@ class _AddInvoiceState extends State<AddInvoice> {
                                 totalAmountWithRounding:
                                     int.tryParse(finalAmountController.text)!,
                                 discount:
-                                    int.tryParse(discountController.text)!,
+                                    int.tryParse(discountController.text) ?? 0,
                                 netAmount:
                                     int.tryParse(finalAmountController.text)!,
                                 isCash: isCash == true ? 1 : 0,
                                 receivedInCash:
                                     int.tryParse(cashAmountController.text) ??
                                         0,
-                                isBank: isBank == true ? 1 : 0,
-                                receivedInBank:
-                                    int.tryParse(bankAmountController.text) ??
+                                isUPI: isUPI == true ? 1 : 0,
+                                receivedInUPI:
+                                    int.tryParse(upiAmountController.text) ?? 0,
+                                isCheque: isCheque == true ? 1 : 0,
+                                receivedInCheque:
+                                    int.tryParse(chequeAmountController.text) ??
                                         0,
+                                chequeNumber: chequeNumberController.text,
+                                bankName: bankNameController.text,
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)
@@ -658,6 +828,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                               invoiceId: invoice.id!,
                                             )));
                               });
+
+                              Provider.of<ItemChangeNotifier>(context,
+                                      listen: false)
+                                  .close();
                             }
                           })
                     ],

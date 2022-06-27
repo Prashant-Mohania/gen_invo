@@ -77,7 +77,7 @@ class MySearch extends SearchDelegate {
                     title: Text(
                         "${suggestionList[index].name!} / ${suggestionList[index].city!} / ${suggestionList[index].state!}"),
                     onTap: () {
-                      Navigator.pop(context, lst[index]);
+                      Navigator.pop(context, suggestionList[index]);
                     },
                   ),
                 )

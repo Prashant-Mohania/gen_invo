@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/item_model.dart';
+import 'package:gen_invo/MyExtension/my_extention.dart';
 import 'package:provider/provider.dart';
 
 import '../../Models/item_change_notifier.dart';
@@ -70,7 +71,7 @@ class _AddItemPageState extends State<AddItemPage> {
 
                       Provider.of<ItemChangeNotifier>(context, listen: false)
                           .add(ItemModel(
-                        title: nameController.text,
+                        title: nameController.text.toTitleCase(),
                         hsn: int.tryParse(hsnController.text),
                         isDefault: 0,
                       ))

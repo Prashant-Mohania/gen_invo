@@ -96,6 +96,8 @@ class _EditItemPageState extends State<EditItemPage> {
                           isLoad = false;
                         });
                       });
+                      Provider.of<ItemChangeNotifier>(context, listen: false)
+                          .close();
                     }
                   },
                 )

@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/company_model.dart';
+import 'package:gen_invo/MyExtension/my_extention.dart';
+import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/widgets/custom_button.dart';
 
 import '../../service/database_service.dart';
@@ -25,6 +27,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   final TextEditingController _accountNumberController =
       TextEditingController();
   final TextEditingController _bankAddressController = TextEditingController();
+  final TextEditingController _invoiceNoController = TextEditingController();
 
   final _formKey = GlobalKey<FormState>();
 
@@ -33,7 +36,7 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     return SafeArea(
       child: Scaffold(
         appBar: AppBar(
-          title: const Text("Add Company"),
+          title: const Text("Add Firm"),
         ),
         body: SingleChildScrollView(
           padding: const EdgeInsets.all(20),
@@ -211,28 +214,46 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                   },
                 ),
                 const SizedBox(height: 20),
+                TextFormField(
+                  controller: _invoiceNoController,
+                  keyboardType: TextInputType.number,
+                  decoration: const InputDecoration(
+                    labelText: "Invoice Number",
+                    border: OutlineInputBorder(),
+                  ),
+                  validator: (value) {
+                    if (value!.isEmpty) {
+                      return "Required";
+                    }
+                    return null;
+                  },
+                ),
+                const SizedBox(height: 20),
                 CustomButton(
                     callback: () {
                       if (_formKey.currentState!.validate()) {
                         DatabaseService.instance
                             .insertCompanyData(
                           CompanyModel(
-                            name: _companyNameController.text,
-                            gstNumber: _gstNumberController.text,
+                            name: _companyNameController.text.toTitleCase(),
+                            gstNumber: _gstNumberController.text.toTitleCase(),
                             phoneNumber:
                                 int.tryParse(_phoneNumberController.text),
-                            address: _addressController.text,
-                            city: _cityController.text,
-                            state: _stateController.text,
+                            address: _addressController.text.toTitleCase(),
+                            city: _cityController.text.toTitleCase(),
+                            state: _stateController.text.toTitleCase(),
                             stateCode: int.tryParse(_stateCodeController.text),
-                            bankName: _bankNameController.text,
+                            bankName: _bankNameController.text.toTitleCase(),
                             ifscCode: _ifscCodeController.text,
                             accountNumber:
                                 int.tryParse(_accountNumberController.text),
-                            bankAddress: _bankAddressController.text,
+                            bankAddress:
+                                _bankAddressController.text.toTitleCase(),
                           ),
                         )
                             .then((value) {
+                          LocalDatabase.setInvoiceCounter("invoiceNo",
+                              int.tryParse(_invoiceNoController.text)!);
                           Navigator.pop(context, true);
                         }).catchError((err) {
                           ScaffoldMessenger.of(context)

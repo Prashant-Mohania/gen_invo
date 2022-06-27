@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:gen_invo/Models/company_model.dart';
+import 'package:gen_invo/screens/SetupPage/setup_parties_page.dart';
 import 'package:gen_invo/service/database_service.dart';
+import 'package:gen_invo/widgets/custom_button.dart';
 
 import 'add_company_page.dart';
 
@@ -16,9 +17,6 @@ class _CompanyPageState extends State<CompanyPage> {
   Widget build(BuildContext context) {
     return SafeArea(
       child: Scaffold(
-        appBar: AppBar(
-          title: const Text("Company Details"),
-        ),
         body: Padding(
           padding: const EdgeInsets.all(20),
           child: FutureBuilder(
@@ -36,29 +34,40 @@ class _CompanyPageState extends State<CompanyPage> {
                 );
               }
               if (snapshot.data!.isEmpty) {
-                return Center(
-                  child: InkWell(
-                    onTap: () async {
-                      final res = await Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                  builder: (_) => const AddCompanyPage())) ??
-                          false;
-                      if (res) {
-                        setState(() {});
-                      }
-                    },
-                    child: const Text(
-                      "Not Company added yet\nAdd now",
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    const Text(
+                      "Firm Initialization",
                       textScaleFactor: 2,
-                      textAlign: TextAlign.center,
                     ),
-                  ),
+                    const SizedBox(height: 10),
+                    CustomButton(
+                        text: "Add Now",
+                        callback: () async {
+                          final res = await Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                      builder: (_) =>
+                                          const AddCompanyPage())) ??
+                              false;
+                          if (res) {
+                            setState(() {});
+                          }
+                        })
+                  ],
                 );
               }
               return Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
+                  const Text(
+                    "Firm Details",
+                    style: TextStyle(fontWeight: FontWeight.w900),
+                    textScaleFactor: 2,
+                  ),
+                  const SizedBox(height: 30),
                   Text(
                     "Name:-  ${snapshot.data![0].name}",
                     style: const TextStyle(fontSize: 20),
@@ -113,6 +122,15 @@ class _CompanyPageState extends State<CompanyPage> {
                     "Bank Address:-  ${snapshot.data![0].bankAddress}",
                     style: const TextStyle(fontSize: 20),
                   ),
+                  const Spacer(),
+                  CustomButton(
+                      text: "Next Step",
+                      callback: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) => const SetupPartiesPage()));
+                      })
                 ],
               );
             },

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/utils/save_file.dart';
-import 'package:pdf/pdf.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
@@ -49,6 +48,12 @@ class _InvoiceViewState extends State<InvoiceView> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Invoice'),
+        actions: [
+          IconButton(
+            onPressed: () {},
+            icon: const Icon(Icons.whatsapp),
+          ),
+        ],
       ),
       body: isLoad
           ? const Center(
@@ -57,8 +62,10 @@ class _InvoiceViewState extends State<InvoiceView> {
           : PdfPreview(
               allowPrinting: false,
               allowSharing: false,
+              canChangeOrientation: false,
+              canChangePageFormat: false,
               padding: const EdgeInsets.all(0),
-              build: (format) => generateInvoice(PdfPageFormat.a4, invoice),
+              build: (format) => generateInvoice(invoice),
             ),
     );
   }

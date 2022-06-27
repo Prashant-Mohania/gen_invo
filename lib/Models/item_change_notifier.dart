@@ -7,7 +7,6 @@ class ItemChangeNotifier extends ChangeNotifier {
   final DatabaseService dbClient = DatabaseService.instance;
   double tax = .015,
       igst = .03,
-      discount = .05,
       subTotal = 0,
       totalAmnt = 0,
       finalAmnt = 0,
@@ -88,5 +87,15 @@ class ItemChangeNotifier extends ChangeNotifier {
   double finalAmount() {
     finalAmnt = totalAmnt + roundOffAmnt - discountAmnt;
     return finalAmnt;
+  }
+
+  void close() {
+    totalAmnt = 0;
+    subTotal = 0;
+    taxAmnt = 0;
+    igstAmnt = 0;
+    roundOffAmnt = 0;
+    discountAmnt = 0;
+    finalAmnt = 0;
   }
 }

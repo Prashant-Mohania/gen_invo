@@ -5,10 +5,12 @@ class InvoiceResultModel {
       isCash,
       receivedInCash,
       discount,
-      isBank,
-      receivedInBank,
+      isUPI,
+      receivedInUPI,
+      isCheque,
+      receivedInCheque,
       netAmount,
-      totalAmountWIthRounding,
+      totalAmountWithRounding,
       netBalance,
       partyId,
       itemId,
@@ -20,8 +22,18 @@ class InvoiceResultModel {
       cgst,
       sgst,
       igst,
-      totalAmountWIthoutRounding;
-  String? date, name, mobile, city, state, gst, email, address, title;
+      totalAmountWithoutRounding;
+  String? date,
+      chequeNumber,
+      bankName,
+      name,
+      mobile,
+      city,
+      state,
+      gst,
+      email,
+      address,
+      title;
 
   InvoiceResultModel({
     this.id,
@@ -30,17 +42,21 @@ class InvoiceResultModel {
     this.isCash,
     this.receivedInCash,
     this.discount,
-    this.isBank,
-    this.receivedInBank,
+    this.isUPI,
+    this.receivedInUPI,
+    this.isCheque,
+    this.receivedInCheque,
+    this.bankName,
+    this.chequeNumber,
     this.netAmount,
-    this.totalAmountWIthRounding,
+    this.totalAmountWithRounding,
     this.weightInGrams,
     this.ratePerGram,
     this.totalCost,
     this.cgst,
     this.sgst,
     this.igst,
-    this.totalAmountWIthoutRounding,
+    this.totalAmountWithoutRounding,
     this.date,
     this.netBalance,
     this.partyId,
@@ -65,17 +81,21 @@ class InvoiceResultModel {
       isCash: json["isCash"],
       receivedInCash: json["receivedInCash"],
       discount: json["discount"],
-      isBank: json["isBank"],
-      receivedInBank: json["receivedInBank"],
+      isUPI: json["isUPI"],
+      receivedInUPI: json["receivedInUPI"],
+      isCheque: json["isCheque"],
+      receivedInCheque: json["receivedInCheque"],
+      bankName: json["bankName"],
+      chequeNumber: json["chequeNumber"],
       netAmount: json["netAmount"],
-      totalAmountWIthRounding: json["totalAmountWIthRounding"],
+      totalAmountWithRounding: json["totalAmountWithRounding"],
       weightInGrams: json["weightInGrams"],
       ratePerGram: json["ratePerGram"],
       totalCost: json["totalCost"],
       cgst: json["cgst"],
       sgst: json["sgst"],
       igst: json["igst"],
-      totalAmountWIthoutRounding: json["totalAmountWIthoutRounding"],
+      totalAmountWithoutRounding: json["totalAmountWithoutRounding"],
       date: json["date"],
       netBalance: json["netBalance"],
       partyId: json['partyId'],
@@ -101,19 +121,23 @@ class InvoiceResultModel {
     data["isCash"] = isCash;
     data["receivedInCash"] = receivedInCash;
     data["discount"] = discount;
-    data["isBank"] = isBank;
-    data["receivedInBank"] = receivedInBank;
+    data["isUPI"] = isUPI;
+    data["receivedInUPI"] = receivedInUPI;
+    data["isCheque"] = isCheque;
+    data["receivedInCheque"] = receivedInCheque;
+    data["bankName"] = bankName;
+    data["chequeNumber"] = chequeNumber;
     data["netAmount"] = netAmount;
-    data["totalAmountWIthRounding"] = totalAmountWIthRounding;
+    data["totalAmountWithRounding"] = totalAmountWithRounding;
     data["weightInGrams"] = weightInGrams;
     data["ratePerGram"] = ratePerGram;
     data["totalCost"] = totalCost;
     data["cgst"] = cgst;
     data["sgst"] = sgst;
     data["igst"] = igst;
-    data["totalAmountWIthoutRounding"] = totalAmountWIthoutRounding;
+    data["totalAmountWithoutRounding"] = totalAmountWithoutRounding;
     data["date"] = date;
-    data['netBalance'] = receivedInBank!;
+    data['netBalance'] = netAmount! - receivedInCash!;
     data['partyId'] = partyId;
     data['name'] = name;
     data['mobile'] = mobile;

@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/screens/InvoicePage/add_invoice_page.dart';
-import 'package:gen_invo/screens/InvoicePage/invoice_view.dart';
+import 'package:gen_invo/screens/InvoicePage/edit_invoice_page.dart';
+import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/widgets/my_drawer.dart';
-import 'package:gen_invo/widgets/party_search.dart';
+import 'package:gen_invo/widgets/invoice_search.dart';
 import 'package:provider/provider.dart';
 
 class InvoicePage extends StatelessWidget {
@@ -21,7 +22,7 @@ class InvoicePage extends StatelessWidget {
                   final temp =
                       Provider.of<InvoiceChangeNotifier>(context, listen: false)
                           .lst;
-                  showSearch(context: context, delegate: PartySearch(temp));
+                  showSearch(context: context, delegate: InvoiceSearch(temp));
                 },
                 icon: const Icon(Icons.search)),
           ],
@@ -30,17 +31,20 @@ class InvoicePage extends StatelessWidget {
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () {
-            int temp =
-                Provider.of<InvoiceChangeNotifier>(context, listen: false)
-                        .lst
-                        .length +
-                    1;
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                    builder: (_) => AddInvoice(
-                          invoiceNo: temp,
-                        )));
+            LocalDatabase.getInvoiceCounter("invoiceNo").then((invNo) {
+              int temp =
+                  Provider.of<InvoiceChangeNotifier>(context, listen: false)
+                          .lst
+                          .length +
+                      1 +
+                      invNo;
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => AddInvoice(
+                            invoiceNo: temp,
+                          )));
+            });
           },
         ),
         body: Consumer<InvoiceChangeNotifier>(
@@ -70,8 +74,8 @@ class InvoicePage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) => InvoiceView(
-                                  invoiceId: invoices.lst[index].id!),
+                              builder: (_) =>
+                                  EditInvoicePage(invoice: invoices.lst[index]),
                             ),
                           );
                         },

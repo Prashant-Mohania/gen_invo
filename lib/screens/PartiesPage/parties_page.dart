@@ -4,6 +4,8 @@ import 'package:gen_invo/screens/PartiesPage/add_parties_page.dart';
 import 'package:gen_invo/screens/PartiesPage/party_details_page.dart';
 import 'package:provider/provider.dart';
 
+import '../../widgets/party_search.dart';
+
 class PartiesPage extends StatelessWidget {
   const PartiesPage({Key? key}) : super(key: key);
 
@@ -13,6 +15,16 @@ class PartiesPage extends StatelessWidget {
       child: Scaffold(
         appBar: AppBar(
           title: const Text("Parties Page"),
+          actions: [
+            IconButton(
+                onPressed: () {
+                  final temp =
+                      Provider.of<PartyChangeNotifier>(context, listen: false)
+                          .lst;
+                  showSearch(context: context, delegate: PartySearch(temp));
+                },
+                icon: const Icon(Icons.search)),
+          ],
         ),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),

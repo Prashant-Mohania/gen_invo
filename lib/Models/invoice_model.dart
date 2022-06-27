@@ -5,8 +5,10 @@ class InvoiceModel {
       isCash,
       receivedInCash,
       discount,
-      isBank,
-      receivedInBank,
+      isUPI,
+      receivedInUPI,
+      isCheque,
+      receivedInCheque,
       netAmount,
       totalAmountWithRounding,
       netBalance;
@@ -17,7 +19,7 @@ class InvoiceModel {
       sgst,
       igst,
       totalAmountWithoutRounding;
-  String? date;
+  String? date, chequeNumber, bankName;
 
   InvoiceModel({
     this.id,
@@ -26,8 +28,12 @@ class InvoiceModel {
     this.isCash,
     this.receivedInCash,
     this.discount,
-    this.isBank,
-    this.receivedInBank,
+    this.isUPI,
+    this.receivedInUPI,
+    this.isCheque,
+    this.receivedInCheque,
+    this.bankName,
+    this.chequeNumber,
     this.netAmount,
     this.totalAmountWithRounding,
     this.weightInGrams,
@@ -48,8 +54,11 @@ class InvoiceModel {
         isCash: json["isCash"],
         receivedInCash: json["receivedInCash"],
         discount: json["discount"],
-        isBank: json["isBank"],
-        receivedInBank: json["receivedInBank"],
+        isUPI: json["isUPI"],
+        receivedInUPI: json["receivedInUPI"],
+        isCheque: json["isCheque"],
+        receivedInCheque: json["receivedInCheque"],
+        bankName: json["bankName"],
         netAmount: json["netAmount"],
         totalAmountWithRounding: json["totalAmountWithRounding"],
         weightInGrams: json["weightInGrams"],
@@ -71,8 +80,12 @@ class InvoiceModel {
     data["isCash"] = isCash;
     data["receivedInCash"] = receivedInCash;
     data["discount"] = discount;
-    data["isBank"] = isBank;
-    data["receivedInBank"] = receivedInBank;
+    data["isUPI"] = isUPI;
+    data["receivedInUPI"] = receivedInUPI;
+    data["isCheque"] = isCheque;
+    data["receivedInCheque"] = receivedInCheque;
+    data["bankName"] = bankName;
+    data["chequeNumber"] = chequeNumber;
     data["netAmount"] = netAmount;
     data["totalAmountWithRounding"] = totalAmountWithRounding;
     data["weightInGrams"] = weightInGrams;
@@ -94,8 +107,10 @@ class InvoiceModel {
     int? isCash,
     int? receivedInCash,
     int? discount,
-    int? isBank,
-    int? receivedInBank,
+    int? isUPI,
+    int? receivedInUPI,
+    int? isCheque,
+    int? receivedInCheque,
     int? netAmount,
     int? totalAmountWithRounding,
     int? netBalance,
@@ -107,6 +122,7 @@ class InvoiceModel {
     double? igst,
     double? totalAmountWithoutRounding,
     String? date,
+    String? chequeNumber,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -115,8 +131,11 @@ class InvoiceModel {
       isCash: isCash ?? this.isCash,
       receivedInCash: receivedInCash ?? this.receivedInCash,
       discount: discount ?? this.discount,
-      isBank: isBank ?? this.isBank,
-      receivedInBank: receivedInBank ?? this.receivedInBank,
+      isUPI: isUPI ?? this.isUPI,
+      receivedInUPI: receivedInUPI ?? this.receivedInUPI,
+      isCheque: isCheque ?? this.isCheque,
+      receivedInCheque: receivedInCheque ?? this.receivedInCheque,
+      chequeNumber: chequeNumber ?? this.chequeNumber,
       netAmount: netAmount ?? this.netAmount,
       totalAmountWithRounding:
           totalAmountWithRounding ?? this.totalAmountWithRounding,

@@ -23,6 +23,14 @@ class InvoiceChangeNotifier extends ChangeNotifier {
     });
   }
 
+  Future update(InvoiceModel invoice) async {
+    await dbClient.updateInvoice(invoice).then((value) {
+      fetchInvoiceList();
+      // lst.add(invoice);
+      // notifyListeners();
+    });
+  }
+
   remove(InvoiceModel invoice) async {
     await dbClient.deleteInvoice(invoice).then((value) {
       fetchInvoiceList();

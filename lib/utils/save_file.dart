@@ -5,7 +5,6 @@ import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_result_model.dart';
 import 'package:gen_invo/utils/invoice_generator.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:pdf/pdf.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SaveFile {
@@ -14,7 +13,7 @@ class SaveFile {
     Directory? directory;
     try {
       if (Platform.isAndroid) {
-        if (await SaveFile()._requestPermission()) {
+        if (await SaveFile().requestPermission()) {
           directory = await getExternalStorageDirectory();
           String newPath = "";
           List<String> paths = directory!.path.split("/");
@@ -48,8 +47,7 @@ class SaveFile {
       if (await directory.exists()) {
         File saveFile = File("${directory.path}/$fileName.pdf");
 
-        await saveFile.writeAsBytes(
-            await generateInvoice(PdfPageFormat.a4, invoiceData),
+        await saveFile.writeAsBytes(await generateInvoice(invoiceData),
             flush: true);
 
         return true;
@@ -64,7 +62,7 @@ class SaveFile {
     return false;
   }
 
-  Future<bool> _requestPermission() async {
+  Future<bool> requestPermission() async {
     final info = await DeviceInfoPlugin().androidInfo;
     if (info.version.sdkInt! >= 30) {
       final status = await Permission.storage.isGranted &&

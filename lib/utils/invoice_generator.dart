@@ -1,16 +1,16 @@
 import 'dart:typed_data';
 
 import 'package:gen_invo/Models/company_model.dart';
+import 'package:gen_invo/MyExtension/my_extention.dart';
 import 'package:gen_invo/service/database_service.dart';
+import 'package:intl/intl.dart';
 import 'package:number_to_words/number_to_words.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
-import 'package:printing/printing.dart';
 
 import '../Models/invoice_result_model.dart';
 
-Future<Uint8List> generateInvoice(
-    PdfPageFormat pageFormat, InvoiceResultModel invoiceData) async {
+Future<Uint8List> generateInvoice(InvoiceResultModel invoiceData) async {
   // final lorem = pw.LoremText();
   final res = await DatabaseService.instance.getCompanyDetails();
   CompanyModel companyData = res[0];
@@ -23,9 +23,6 @@ Future<Uint8List> generateInvoice(
         invoiceData.weightInGrams!.toString(),
         invoiceData.ratePerGram!.toString(),
         invoiceData.totalCost!.toString()),
-    const Product("", "", "", "", "", ""),
-    const Product("", "", "", "", "", ""),
-    const Product("", "", "", "", "", ""),
   ];
 
   final invoice = Invoice(
@@ -36,7 +33,7 @@ Future<Uint8List> generateInvoice(
     customerGST: invoiceData.gst!.toString(),
   );
 
-  return await invoice.buildPdf(pageFormat, invoiceData, companyData);
+  return await invoice.buildPdf(invoiceData, companyData);
 }
 
 class Invoice {
@@ -56,26 +53,32 @@ class Invoice {
 
   static const _darkColor = PdfColors.blueGrey800;
 
-  Future<Uint8List> buildPdf(PdfPageFormat pageFormat,
+  Future<Uint8List> buildPdf(
       InvoiceResultModel invoiceData, CompanyModel companyData) async {
     final doc = pw.Document();
 
     doc.addPage(
-      pw.MultiPage(
-        pageTheme: _buildTheme(
-          pageFormat,
-          await PdfGoogleFonts.robotoRegular(),
-          await PdfGoogleFonts.robotoBold(),
-          await PdfGoogleFonts.robotoItalic(),
-        ),
-        header: (context) => _buildHeader(context, invoiceData, companyData),
-        footer: _buildFooter,
-        build: (context) => [
-          _contentHeader(context, invoiceData),
-          _contentTable(context),
-          _contentFooter(context, invoiceData, companyData),
-          _termsAndConditions(context, companyData),
-        ],
+      pw.Page(
+        margin: const pw.EdgeInsets.all(30),
+        build: (context) {
+          return pw.Container(
+            decoration: pw.BoxDecoration(
+              border: pw.Border.all(
+                color: PdfColors.black,
+                width: 1,
+              ),
+            ),
+            child: pw.Column(
+              children: [
+                _buildHeader(context, invoiceData, companyData),
+                _contentHeader(context, invoiceData),
+                _contentTable(context),
+                _contentFooter(context, invoiceData, companyData),
+                _termsAndConditions(context, companyData),
+              ],
+            ),
+          );
+        },
       ),
     );
 
@@ -120,9 +123,10 @@ class Invoice {
           pw.Text(
             "${companyData.name}",
             style: pw.TextStyle(
-                fontWeight: pw.FontWeight.bold,
-                fontSize: 36,
-                color: PdfColors.purple900),
+              fontWeight: pw.FontWeight.bold,
+              fontSize: 36,
+              color: const PdfColor(.12, .29, .49),
+            ),
             textAlign: pw.TextAlign.center,
           ),
           pw.Text(
@@ -139,12 +143,30 @@ class Invoice {
               children: [
                 pw.TableRow(
                   children: [
-                    pw.Text(" Invoice\n No."),
-                    pw.Text(invoiceData.id.toString()),
-                    pw.Text("Invoice Date:"),
-                    pw.Text(invoiceData.date!.toString()),
-                    pw.Text("Transporter\nName/Model:"),
-                    pw.Text(""),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text(" Invoice\n No."),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text(invoiceData.id.toString()),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text("Invoice Date:"),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text(_formatDate(invoiceData.date!)),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text("Transporter\nName/Model:"),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(top: 5),
+                      child: pw.Text(""),
+                    ),
                   ],
                 ),
                 pw.TableRow(
@@ -159,12 +181,30 @@ class Invoice {
                 ),
                 pw.TableRow(
                   children: [
-                    pw.Text(" Issued From"),
-                    pw.Text(""),
-                    pw.Text(""),
-                    pw.Text(""),
-                    pw.Text("Lr. No. & Date:"),
-                    pw.Text(""),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text(" Issued From"),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text(""),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text(""),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text(""),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text("Lr. No. & Date:"),
+                    ),
+                    pw.Padding(
+                      padding: const pw.EdgeInsets.only(bottom: 5),
+                      child: pw.Text(""),
+                    ),
                   ],
                 ),
               ],
@@ -176,203 +216,256 @@ class Invoice {
     );
   }
 
-  pw.Widget _buildFooter(pw.Context context) {
-    return pw.Row(
-      mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
-      crossAxisAlignment: pw.CrossAxisAlignment.end,
+  pw.Widget _contentHeader(pw.Context context, InvoiceResultModel invoiceData) {
+    return pw.Column(
       children: [
-        pw.Text(
-          'Page ${context.pageNumber}/${context.pagesCount}',
-          style: const pw.TextStyle(
-            fontSize: 12,
-            color: PdfColors.white,
-          ),
+        pw.Row(
+          mainAxisAlignment: pw.MainAxisAlignment.spaceEvenly,
+          children: [
+            pw.Expanded(
+              child: pw.Container(
+                padding: const pw.EdgeInsets.all(5),
+                child: pw.Text(
+                  "Details of Receiver/Bill To:",
+                  textAlign: pw.TextAlign.center,
+                  textScaleFactor: 1.2,
+                ),
+              ),
+            ),
+            pw.Expanded(
+              child: pw.Container(
+                padding: const pw.EdgeInsets.all(5),
+                decoration: pw.BoxDecoration(
+                  border: pw.Border.all(
+                    color: PdfColors.black,
+                    width: 1,
+                  ),
+                ),
+                child: pw.Text(
+                  "Details of Consignee/Shipped To:",
+                  textAlign: pw.TextAlign.center,
+                  textScaleFactor: 1.2,
+                ),
+              ),
+            ),
+          ],
         ),
-      ],
-    );
-  }
-
-  pw.PageTheme _buildTheme(
-      PdfPageFormat pageFormat, pw.Font base, pw.Font bold, pw.Font italic) {
-    return pw.PageTheme(
-      pageFormat: pageFormat,
-      theme: pw.ThemeData.withFont(
-        base: base,
-        bold: bold,
-        italic: italic,
-      ),
-    );
-  }
-
-  pw.Widget _contentHeader(pw.Context context, invoiceData) {
-    return pw.Row(
-      crossAxisAlignment: pw.CrossAxisAlignment.start,
-      children: [
-        pw.Expanded(
-          child: pw.Table(
-              border: pw.TableBorder.all(color: PdfColors.black),
-              children: [
-                pw.TableRow(
-                  children: [
-                    pw.Text(
-                      "Details of Receiver/Bill To:",
-                      textAlign: pw.TextAlign.center,
-                    ),
-                    pw.Text(
-                      "Details of Consignee/Shipped To:",
-                      textAlign: pw.TextAlign.center,
-                    ),
-                  ],
+        pw.Row(
+          crossAxisAlignment: pw.CrossAxisAlignment.start,
+          children: [
+            pw.Expanded(
+              child: pw.Table(
+                columnWidths: {
+                  0: const pw.FixedColumnWidth(6),
+                  1: const pw.FixedColumnWidth(20),
+                  2: const pw.FixedColumnWidth(6),
+                  3: const pw.FixedColumnWidth(20),
+                },
+                border: const pw.TableBorder(
+                  top: pw.BorderSide(width: 01),
+                  verticalInside: pw.BorderSide(width: 01),
                 ),
-                pw.TableRow(
-                  children: [
-                    pw.Padding(
-                      padding: const pw.EdgeInsets.all(5),
-                      child: pw.Table(
-                        border: const pw.TableBorder(
-                            verticalInside: pw.BorderSide(
-                                width: 1, style: pw.BorderStyle.solid)),
-                        children: [
-                          pw.TableRow(
-                            children: [
-                              pw.Text(
-                                "Name:",
-                                textAlign: pw.TextAlign.left,
-                              ),
-                              pw.Text(
-                                " $customerName",
-                                textAlign: pw.TextAlign.left,
-                              ),
-                            ],
-                          ),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "address:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              " $customerAddress",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "GSTIN:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              " $customerGST",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "State:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Row(
-                              mainAxisAlignment:
-                                  pw.MainAxisAlignment.spaceBetween,
-                              children: [
-                                pw.Text(
-                                  " ${invoiceData.state!}",
-                                  textAlign: pw.TextAlign.left,
-                                ),
-                                pw.Text(
-                                  "State Code: ${09}",
-                                  textAlign: pw.TextAlign.left,
-                                ),
-                              ],
-                            )
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "Contact:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              "",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                        ],
+                children: [
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
+                        child: pw.Text(
+                          "Name:",
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
-                    ),
-                    pw.Container(
-                      margin: const pw.EdgeInsets.all(5),
-                      child: pw.Table(
-                        border: const pw.TableBorder(
-                            verticalInside: pw.BorderSide(
-                                width: 1, style: pw.BorderStyle.solid)),
-                        children: [
-                          pw.TableRow(
-                            children: [
-                              pw.Text(
-                                "Name:",
-                                textAlign: pw.TextAlign.left,
-                              ),
-                              pw.Text(
-                                "",
-                                textAlign: pw.TextAlign.left,
-                              ),
-                            ],
-                          ),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "address:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              "",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "GSTIN:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              "",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              "State:",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Row(
-                              mainAxisAlignment:
-                                  pw.MainAxisAlignment.spaceBetween,
-                              children: [
-                                pw.Text(
-                                  "",
-                                  textAlign: pw.TextAlign.left,
-                                ),
-                                pw.Text(
-                                  "State Code:    ",
-                                  textAlign: pw.TextAlign.left,
-                                ),
-                              ],
-                            ),
-                          ]),
-                          pw.TableRow(children: [
-                            pw.Text(
-                              '.',
-                              textAlign: pw.TextAlign.left,
-                            ),
-                            pw.Text(
-                              "",
-                              textAlign: pw.TextAlign.left,
-                            ),
-                          ]),
-                        ],
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
+                        child: pw.Text(
+                          customerName,
+                          textAlign: pw.TextAlign.left,
+                        ),
                       ),
-                    )
-                  ],
-                ),
-              ]),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
+                        child: pw.Text(
+                          "Name:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
+                        child: pw.Text(
+                          "",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "address:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          customerAddress,
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "address:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
+                        child: pw.Text(
+                          "GSTIN:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          customerGST,
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "GSTIN:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "State:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(5),
+                        child: pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text(
+                              invoiceData.state!,
+                              textAlign: pw.TextAlign.left,
+                            ),
+                            pw.Text(
+                              "State Code: 09",
+                              textAlign: pw.TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "State:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Row(
+                          mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
+                          children: [
+                            pw.Text(
+                              "",
+                              textAlign: pw.TextAlign.left,
+                            ),
+                            pw.Text(
+                              "State Code: ",
+                              textAlign: pw.TextAlign.left,
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 5),
+                          child: pw.Text(
+                            "Contact:",
+                            textAlign: pw.TextAlign.left,
+                          ),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          invoiceData.mobile!,
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Padding(
+                          padding: const pw.EdgeInsets.only(bottom: 5),
+                          child: pw.Text(
+                            "Contact:",
+                            textAlign: pw.TextAlign.left,
+                          ),
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(bottom: 5),
+                        child: pw.Text(
+                          " ",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+            ),
+          ],
         ),
       ],
     );
@@ -400,6 +493,7 @@ class Invoice {
                   crossAxisAlignment: pw.CrossAxisAlignment.start,
                   children: [
                     pw.Column(
+                      crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
                           "Total invoice Amount in words:",
@@ -413,7 +507,7 @@ class Invoice {
                         ),
                       ],
                     ),
-                    pw.SizedBox(height: 30),
+                    pw.SizedBox(height: 20),
                     pw.Column(
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
@@ -437,32 +531,49 @@ class Invoice {
                       children: [
                         pw.RichText(
                           text: pw.TextSpan(
-                              text: "Payment Received in Cash/Bank: ",
+                            text: "Payment Received in Cash/Bank: ",
+                            children: [
+                              pw.TextSpan(
+                                text: invoiceData.isCash == 1 &&
+                                        invoiceData.isUPI == 1 &&
+                                        invoiceData.isCheque == 1
+                                    ? "By Cash, UPI and Cheque"
+                                    : invoiceData.isCash == 1 &&
+                                            invoiceData.isUPI == 1
+                                        ? "By Cash and UPI"
+                                        : invoiceData.isUPI == 1 &&
+                                                invoiceData.isCheque == 1
+                                            ? "By UPI and Cheque"
+                                            : invoiceData.isCash == 1 &&
+                                                    invoiceData.isCheque == 1
+                                                ? "By Cash and Cheque"
+                                                : invoiceData.isCash == 1
+                                                    ? "By Cash"
+                                                    : invoiceData.isUPI == 1
+                                                        ? "By UPI"
+                                                        : "By Cheque",
+                                style: pw.TextStyle(
+                                  fontWeight: pw.FontWeight.bold,
+                                ),
+                              )
+                            ],
+                          ),
+                        ),
+                        if (invoiceData.isCheque == 1)
+                          pw.RichText(
+                            text: pw.TextSpan(
+                              text: "Cheque Details: ",
                               children: [
                                 pw.TextSpan(
-                                  text: invoiceData.isCash == 1 &&
-                                          invoiceData.isBank == 1
-                                      ? "By Cash and Bank"
-                                      : invoiceData.isCash == 1
-                                          ? "By Cash"
-                                          : "By Bank",
+                                  text:
+                                      "${invoiceData.bankName}-${invoiceData.chequeNumber}",
                                   style: pw.TextStyle(
                                     fontWeight: pw.FontWeight.bold,
                                   ),
                                 )
-                              ]),
-                        ),
-                        // pw.RichText(
-                        //   text:
-                        //       pw.TextSpan(text: "Cheque Details: ", children: [
-                        //     pw.TextSpan(
-                        //       text: "union bank-039904",
-                        //       style: pw.TextStyle(
-                        //         fontWeight: pw.FontWeight.bold,
-                        //       ),
-                        //     )
-                        //   ]),
-                        // ),
+                              ],
+                            ),
+                          ),
                       ],
                     )
                   ],
@@ -485,7 +596,7 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " other Charges, if any",
+                          " Other Charges, if any",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
@@ -565,7 +676,7 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${(invoiceData.totalAmountWIthRounding! - invoiceData.totalAmountWIthoutRounding!).toStringAsFixed(2)}",
+                        " ${(invoiceData.totalAmountWithRounding! - invoiceData.totalAmountWithoutRounding!).toStringAsFixed(2)}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
@@ -580,7 +691,7 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.totalAmountWIthRounding!}",
+                        " ${invoiceData.totalAmountWithRounding!}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
@@ -605,12 +716,12 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " Received (By Bank)",
+                          " Received (By UPI)",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.receivedInBank}",
+                        " ${invoiceData.receivedInUPI}",
                         textAlign: pw.TextAlign.left,
                       ),
                     ],
@@ -620,7 +731,22 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " Balance",
+                          " Received (By Cheque)",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Text(
+                        " ${invoiceData.receivedInCheque}",
+                        textAlign: pw.TextAlign.left,
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.all(2),
+                        child: pw.Text(
+                          "Balance",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
@@ -665,13 +791,19 @@ class Invoice {
           children: [
             pw.TableRow(
               children: [
-                pw.Text(
-                  "Receiver's Signature",
-                  textAlign: pw.TextAlign.center,
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(
+                    "Receiver's Signature",
+                    textAlign: pw.TextAlign.center,
+                  ),
                 ),
-                pw.Text(
-                  "For Hiralal & Brothers",
-                  textAlign: pw.TextAlign.center,
+                pw.Container(
+                  padding: const pw.EdgeInsets.all(5),
+                  child: pw.Text(
+                    "For Hiralal & Brothers",
+                    textAlign: pw.TextAlign.center,
+                  ),
                 ),
               ],
             ),
@@ -696,51 +828,61 @@ class Invoice {
       'Rate(per GM)',
       'Taxable-Value',
     ];
-    return pw.Table.fromTextArray(
-      border: const pw.TableBorder(
-        left: pw.BorderSide(color: PdfColors.black),
-        right: pw.BorderSide(color: PdfColors.black),
-      ),
-      cellAlignment: pw.Alignment.centerLeft,
-      headerDecoration: pw.BoxDecoration(
-        border: pw.Border.all(color: PdfColors.black),
-      ),
-      headerHeight: 25,
-      cellHeight: 40,
-      cellAlignments: {
-        0: pw.Alignment.center,
-        1: pw.Alignment.center,
-        2: pw.Alignment.center,
-        3: pw.Alignment.center,
-        4: pw.Alignment.center,
-        5: pw.Alignment.center,
-      },
-      headerStyle: const pw.TextStyle(
-        color: PdfColors.black,
-        fontSize: 10,
-      ),
-      // cellStyle: const pw.TextStyle(
-      //   color: _darkColor,
-      //   fontSize: 10,
-      // ),
-      // rowDecoration: pw.BoxDecoration(
-      // border: pw.Border(
-      //   bottom: pw.BorderSide(
-      //     color: accentColor,
-      //     // width: .5,
-      //   ),
-      // ),
-      // ),
-      headers: List<String>.generate(
-        tableHeaders.length,
-        (col) => tableHeaders[col],
-      ),
-      data: List<List<String>>.generate(
-        products.length,
-        (row) => List<String>.generate(
-          tableHeaders.length,
-          (col) => products[row].getIndex(col),
-        ),
+    return pw.Expanded(
+      child: pw.Column(
+        children: [
+          pw.Table.fromTextArray(
+            border: const pw.TableBorder(
+              left: pw.BorderSide(color: PdfColors.black),
+              right: pw.BorderSide(color: PdfColors.black),
+            ),
+            cellAlignment: pw.Alignment.centerLeft,
+            headerDecoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
+            ),
+            headerHeight: 25,
+            cellHeight: 40,
+            cellAlignments: {
+              0: pw.Alignment.center,
+              1: pw.Alignment.center,
+              2: pw.Alignment.center,
+              3: pw.Alignment.center,
+              4: pw.Alignment.center,
+              5: pw.Alignment.center,
+            },
+            headerStyle: const pw.TextStyle(
+              color: PdfColors.black,
+              fontSize: 10,
+            ),
+            // cellStyle: const pw.TextStyle(
+            //   color: _darkColor,
+            //   fontSize: 10,
+            // ),
+            // rowDecoration: pw.BoxDecoration(
+            // border: pw.Border(
+            //   bottom: pw.BorderSide(
+            //     color: accentColor,
+            //     // width: .5,
+            //   ),
+            // ),
+            // ),
+            headers: List<String>.generate(
+              tableHeaders.length,
+              (col) => tableHeaders[col],
+            ),
+            // data: List<List<String>>.generate(1, (index) => List<String>.generate(
+            //   tableHeaders.length,
+            //   (col) => '',
+            // )),
+            data: List<List<String>>.generate(
+              products.length,
+              (row) => List<String>.generate(
+                tableHeaders.length,
+                (col) => products[row].getIndex(col),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -782,31 +924,9 @@ class Product {
   }
 }
 
-String convertToTitleCase(String text) {
-  if (text.length <= 1) {
-    return text.toUpperCase();
-  }
-
-  // Split string into multiple words
-  final List<String> words = text.split(' ');
-
-  // Capitalize first letter of each words
-  final capitalizedWords = words.map((word) {
-    if (word.trim().isNotEmpty) {
-      final String firstLetter = word.trim().substring(0, 1).toUpperCase();
-      final String remainingLetters = word.trim().substring(1);
-
-      return '$firstLetter$remainingLetters';
-    }
-    return '';
-  });
-
-  // Join/Merge all words back to one String
-  return capitalizedWords.join(' ');
-}
-
-extension CapitalizedStringExtension on String {
-  String toTitleCase() {
-    return convertToTitleCase(this);
-  }
+String _formatDate(String date) {
+  var temp = DateTime.parse(
+      "${date.split("-")[2]}-${date.split("-")[1]}-${date.split("-")[0]}");
+  final format = DateFormat.yMMMd('en_US');
+  return format.format(temp);
 }

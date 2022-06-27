@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/party_change_notifier.dart';
 import 'package:gen_invo/Models/party_model.dart';
+import 'package:gen_invo/MyExtension/my_extention.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/custom_button.dart';
@@ -138,13 +139,13 @@ class _AddPartyPageState extends State<AddPartyPage> {
                             isLoad = true;
                           });
                           var party = PartyModel(
-                            name: nameController.text,
-                            mobile: numberController.text,
-                            email: emailController.text,
-                            city: cityController.text,
-                            state: stateController.text,
-                            gst: gstController.text,
-                            address: addressController.text,
+                            name: nameController.text.toTitleCase(),
+                            mobile: numberController.text.toTitleCase(),
+                            email: emailController.text.toTitleCase(),
+                            city: cityController.text.toTitleCase(),
+                            state: stateController.text.toTitleCase(),
+                            gst: gstController.text.toTitleCase(),
+                            address: addressController.text.toTitleCase(),
                           );
                           Provider.of<PartyChangeNotifier>(context,
                                   listen: false)

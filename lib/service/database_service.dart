@@ -32,11 +32,11 @@ class DatabaseService {
 CREATE TABLE party ( 
   partyId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, 
   name TEXT NOT NULL,
-  mobile TEXT NOT NULL,
+  mobile TEXT,
   email TEXT,
   city TEXT NOT NULL,
   state TEXT NOT NULL,
-  address TEXT NOT NULL,
+  address TEXT,
   gst TEXT
   )
 ''');
@@ -62,13 +62,17 @@ CREATE TABLE invoice (
   cgst REAL NOT NULL,
   sgst REAL NOT NULL,
   igst REAL NOT NULL,
-  totalAmountWIthoutRounding REAL NOT NULL,
-  totalAmountWIthRounding INTEGER NOT NULL,
+  totalAmountWithoutRounding REAL NOT NULL,
+  totalAmountWithRounding INTEGER NOT NULL,
   discount INTEGER,
   isCash INTEGER NOT NULL,
   receivedInCash INTEGER,
-  isBank INTEGER NOT NULL,
-  receivedInBank INTEGER NOT NULL,
+  isUPI INTEGER NOT NULL,
+  receivedInUPI INTEGER NOT NULL,
+  isCheque INTEGER NOT NULL,
+  bankName TEXT NOT NULL,
+  chequeNumber TEXT NOT NULL,
+  receivedInCheque INTEGER NOT NULL,
   netAmount INTEGER NOT NULL,
   netBalance INTEGER NOT NULL
   )
@@ -166,6 +170,12 @@ LEFT JOIN item ON invoice.iId = item.itemId
     final db = await instance.database;
     final id = await db.insert("invoice", item.toJson());
     return item.copyWith(id: id);
+  }
+
+  updateInvoice(InvoiceModel invoice) async {
+    final db = await instance.database;
+    await db.update("invoice", invoice.toJson(),
+        where: "id = ?", whereArgs: [invoice.id]);
   }
 
   Future<void> deleteInvoice(InvoiceModel invoice) async {
