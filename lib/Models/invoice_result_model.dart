@@ -9,13 +9,15 @@ class InvoiceResultModel {
       receivedInUPI,
       isCheque,
       receivedInCheque,
+      isRTGS,
       netAmount,
       totalAmountWithRounding,
       netBalance,
       partyId,
       itemId,
       hsn,
-      isDefault;
+      isDefault,
+      isAdjusted;
   double? weightInGrams,
       ratePerGram,
       totalCost,
@@ -26,6 +28,7 @@ class InvoiceResultModel {
   String? date,
       chequeNumber,
       bankName,
+      rtgsState,
       name,
       mobile,
       city,
@@ -48,6 +51,8 @@ class InvoiceResultModel {
     this.receivedInCheque,
     this.bankName,
     this.chequeNumber,
+    this.isRTGS,
+    this.rtgsState,
     this.netAmount,
     this.totalAmountWithRounding,
     this.weightInGrams,
@@ -71,6 +76,7 @@ class InvoiceResultModel {
     this.title,
     this.hsn,
     this.isDefault,
+    this.isAdjusted = 0,
   });
 
   factory InvoiceResultModel.fromJson(Map<String, dynamic> json) {
@@ -87,6 +93,8 @@ class InvoiceResultModel {
       receivedInCheque: json["receivedInCheque"],
       bankName: json["bankName"],
       chequeNumber: json["chequeNumber"],
+      isRTGS: json["isRTGS"],
+      rtgsState: json["rtgsState"],
       netAmount: json["netAmount"],
       totalAmountWithRounding: json["totalAmountWithRounding"],
       weightInGrams: json["weightInGrams"],
@@ -110,6 +118,7 @@ class InvoiceResultModel {
       title: json['title'],
       hsn: json['hsn'],
       isDefault: json['isDefault'],
+      isAdjusted: json['isAdjusted'],
     );
   }
 
@@ -127,6 +136,8 @@ class InvoiceResultModel {
     data["receivedInCheque"] = receivedInCheque;
     data["bankName"] = bankName;
     data["chequeNumber"] = chequeNumber;
+    data["isRTGS"] = isRTGS;
+    data["rtgsState"] = rtgsState;
     data["netAmount"] = netAmount;
     data["totalAmountWithRounding"] = totalAmountWithRounding;
     data["weightInGrams"] = weightInGrams;
@@ -150,6 +161,7 @@ class InvoiceResultModel {
     data['title'] = title;
     data['hsn'] = hsn;
     data['isDefault'] = isDefault ?? 0;
+    data['isAdjusted'] = isAdjusted ?? 0;
     return data;
   }
 }

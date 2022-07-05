@@ -1,4 +1,5 @@
 import 'package:flutter/cupertino.dart';
+import 'package:gen_invo/Models/invoice_result_model.dart';
 import 'package:gen_invo/service/database_service.dart';
 import '../Models/party_model.dart';
 
@@ -35,5 +36,11 @@ class PartyChangeNotifier extends ChangeNotifier {
       lst = value;
       notifyListeners();
     });
+  }
+
+  Future<List<InvoiceResultModel>> getInvoiceListByPartyId(
+      PartyModel party) async {
+    final res = await dbClient.getInvoiceListByPartyId(party.partyId!);
+    return res;
   }
 }

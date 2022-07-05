@@ -17,12 +17,13 @@ Future<Uint8List> generateInvoice(InvoiceResultModel invoiceData) async {
 
   final products = <Product>[
     Product(
-        '1',
-        invoiceData.title!,
-        invoiceData.hsn.toString(),
-        invoiceData.weightInGrams!.toString(),
-        invoiceData.ratePerGram!.toString(),
-        invoiceData.totalCost!.toString()),
+      '1',
+      invoiceData.title!,
+      invoiceData.hsn.toString(),
+      invoiceData.weightInGrams!,
+      invoiceData.ratePerGram! * 1000,
+      invoiceData.totalCost!,
+    ),
   ];
 
   final invoice = Invoice(
@@ -97,9 +98,9 @@ class Invoice {
             children: [
               pw.Container(
                 child: pw.Text(
-                  '  GSTIN: ${companyData.gstNumber}',
+                  '  GSTIN: ${companyData.gstNumber!.toUpperCase()}',
                   style: pw.TextStyle(
-                    color: PdfColors.red,
+                    color: PdfColor.fromHex('#bb1312'),
                     fontWeight: pw.FontWeight.bold,
                   ),
                 ),
@@ -117,7 +118,9 @@ class Invoice {
           ),
           pw.Text(
             "TAX INVOICE",
-            style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
+            style: pw.TextStyle(
+                fontWeight: pw.FontWeight.bold,
+                decoration: pw.TextDecoration.underline),
             textAlign: pw.TextAlign.center,
           ),
           pw.Text(
@@ -130,7 +133,7 @@ class Invoice {
             textAlign: pw.TextAlign.center,
           ),
           pw.Text(
-            "${companyData.address}",
+            "${companyData.address}, ${companyData.city}, ${companyData.state}",
             style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
             textAlign: pw.TextAlign.center,
           ),
@@ -145,7 +148,7 @@ class Invoice {
                   children: [
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 5),
-                      child: pw.Text(" Invoice\n No."),
+                      child: pw.Text(" Invoice No."),
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 5),
@@ -171,10 +174,10 @@ class Invoice {
                 ),
                 pw.TableRow(
                   children: [
-                    pw.Text(" State"),
+                    pw.Text(" State:"),
                     pw.Text("Uttar Pradesh"),
                     pw.Text("State Code:"),
-                    pw.Text("${companyData.stateCode}"),
+                    pw.Text("09"),
                     pw.Text("Vehicle number:"),
                     pw.Text(""),
                   ],
@@ -183,7 +186,7 @@ class Invoice {
                   children: [
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(bottom: 5),
-                      child: pw.Text(" Issued From"),
+                      child: pw.Text(" Issued From:"),
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(bottom: 5),
@@ -228,7 +231,6 @@ class Invoice {
                 child: pw.Text(
                   "Details of Receiver/Bill To:",
                   textAlign: pw.TextAlign.center,
-                  textScaleFactor: 1.2,
                 ),
               ),
             ),
@@ -244,7 +246,6 @@ class Invoice {
                 child: pw.Text(
                   "Details of Consignee/Shipped To:",
                   textAlign: pw.TextAlign.center,
-                  textScaleFactor: 1.2,
                 ),
               ),
             ),
@@ -289,6 +290,7 @@ class Invoice {
                             top: 5, left: 5, bottom: 5),
                         child: pw.Text(
                           "Name:",
+                          textScaleFactor: .9,
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
@@ -307,7 +309,7 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
                         child: pw.Text(
-                          "address:",
+                          "Address:",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
@@ -321,7 +323,41 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
                         child: pw.Text(
-                          "address:",
+                          "Address:",
+                          textScaleFactor: .9,
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                    ],
+                  ),
+                  pw.TableRow(
+                    children: [
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "GSTIN:",
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          customerGST.toUpperCase(),
+                          textAlign: pw.TextAlign.left,
+                        ),
+                      ),
+                      pw.Padding(
+                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        child: pw.Text(
+                          "GSTIN:",
+                          textScaleFactor: .9,
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
@@ -339,38 +375,6 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.only(
                             top: 5, left: 5, bottom: 5),
-                        child: pw.Text(
-                          "GSTIN:",
-                          textAlign: pw.TextAlign.left,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
-                        child: pw.Text(
-                          customerGST,
-                          textAlign: pw.TextAlign.left,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
-                        child: pw.Text(
-                          "GSTIN:",
-                          textAlign: pw.TextAlign.left,
-                        ),
-                      ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
-                        child: pw.Text(
-                          "",
-                          textAlign: pw.TextAlign.left,
-                        ),
-                      ),
-                    ],
-                  ),
-                  pw.TableRow(
-                    children: [
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
                         child: pw.Text(
                           "State:",
                           textAlign: pw.TextAlign.left,
@@ -386,21 +390,23 @@ class Invoice {
                               textAlign: pw.TextAlign.left,
                             ),
                             pw.Text(
-                              "State Code: 09",
+                              "State Code: ${invoiceData.gst!.isNotEmpty ? invoiceData.gst!.substring(0, 2) : invoiceData.state == "Uttar Pradesh" ? "09" : ""}",
+                              textScaleFactor: .8,
                               textAlign: pw.TextAlign.left,
                             ),
                           ],
                         ),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        padding: const pw.EdgeInsets.only(
+                            top: 5, left: 5, bottom: 5),
                         child: pw.Text(
                           "State:",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Padding(
-                        padding: const pw.EdgeInsets.only(left: 5, bottom: 5),
+                        padding: const pw.EdgeInsets.all(5),
                         child: pw.Row(
                           mainAxisAlignment: pw.MainAxisAlignment.spaceBetween,
                           children: [
@@ -410,6 +416,7 @@ class Invoice {
                             ),
                             pw.Text(
                               "State Code: ",
+                              textScaleFactor: .8,
                               textAlign: pw.TextAlign.left,
                             ),
                           ],
@@ -453,13 +460,6 @@ class Invoice {
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
-                      pw.Padding(
-                        padding: const pw.EdgeInsets.only(bottom: 5),
-                        child: pw.Text(
-                          " ",
-                          textAlign: pw.TextAlign.left,
-                        ),
-                      ),
                     ],
                   ),
                 ],
@@ -481,8 +481,7 @@ class Invoice {
           pw.Expanded(
             flex: 3,
             child: pw.Padding(
-              padding:
-                  const pw.EdgeInsets.symmetric(vertical: 10, horizontal: 3),
+              padding: const pw.EdgeInsets.all(10),
               child: pw.DefaultTextStyle(
                 style: const pw.TextStyle(
                   fontSize: 10,
@@ -496,13 +495,11 @@ class Invoice {
                       crossAxisAlignment: pw.CrossAxisAlignment.start,
                       children: [
                         pw.Text(
-                          "Total invoice Amount in words:",
+                          "Total Invoice Amount in words:",
                           textAlign: pw.TextAlign.left,
                         ),
                         pw.Text(
-                          NumberToWord()
-                              .convert("en-in", invoiceData.netAmount!)
-                              .toTitleCase(),
+                          "${NumberToWord().convert("en-in", invoiceData.netAmount!).toTitleCase()}only",
                           style: pw.TextStyle(fontWeight: pw.FontWeight.bold),
                         ),
                       ],
@@ -574,6 +571,21 @@ class Invoice {
                               ],
                             ),
                           ),
+                        // pw.SizedBox(height: 20),
+                        if (invoiceData.isRTGS == 1)
+                          pw.RichText(
+                            text: pw.TextSpan(
+                              text: "RTGS Status:",
+                              children: [
+                                pw.TextSpan(
+                                  text: invoiceData.rtgsState,
+                                  style: pw.TextStyle(
+                                    fontWeight: pw.FontWeight.bold,
+                                  ),
+                                )
+                              ],
+                            ),
+                          ),
                       ],
                     )
                   ],
@@ -586,10 +598,13 @@ class Invoice {
             child: pw.DefaultTextStyle(
               style: const pw.TextStyle(
                 fontSize: 10,
-                color: _darkColor,
               ),
               child: pw.Table(
                 border: pw.TableBorder.all(),
+                columnWidths: {
+                  0: const pw.FixedColumnWidth(10),
+                  1: const pw.FixedColumnWidth(5),
+                },
                 children: [
                   pw.TableRow(
                     children: [
@@ -616,8 +631,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.totalCost}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.totalCost!)}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -626,13 +641,13 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " CGST",
+                          " CGST @ 1.5%",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.cgst}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.cgst!)}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -641,13 +656,13 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " SGST",
+                          " SGST @ 1.5%",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.sgst}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.sgst!)}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -656,13 +671,13 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          " IGST",
+                          " IGST @ 3.0%",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.igst}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.igst!)}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -676,8 +691,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${(invoiceData.totalAmountWithRounding! - invoiceData.totalAmountWithoutRounding!).toStringAsFixed(2)}",
-                        textAlign: pw.TextAlign.left,
+                        " ${(invoiceData.totalAmountWithRounding! - invoiceData.totalAmountWithoutRounding!).toStringAsFixed(2)}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -691,8 +706,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.totalAmountWithRounding!}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.totalAmountWithRounding!.toDouble())}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -706,8 +721,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.receivedInCash}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.receivedInCash!.toDouble())}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -721,8 +736,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.receivedInUPI}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.receivedInUPI!.toDouble())}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -736,8 +751,8 @@ class Invoice {
                         ),
                       ),
                       pw.Text(
-                        " ${invoiceData.receivedInCheque}",
-                        textAlign: pw.TextAlign.left,
+                        " ${_currencyFormat(invoiceData.receivedInCheque!.toDouble())}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -746,13 +761,13 @@ class Invoice {
                       pw.Padding(
                         padding: const pw.EdgeInsets.all(2),
                         child: pw.Text(
-                          "Balance",
+                          " Balance",
                           textAlign: pw.TextAlign.left,
                         ),
                       ),
                       pw.Text(
-                        " ${(invoiceData.netAmount! - invoiceData.receivedInCash!)}",
-                        textAlign: pw.TextAlign.left,
+                        "${_currencyFormat((invoiceData.netAmount! - invoiceData.receivedInCash!).toDouble())}  ",
+                        textAlign: pw.TextAlign.right,
                       ),
                     ],
                   ),
@@ -824,8 +839,8 @@ class Invoice {
       'SNO ',
       'DESCRIPTION OF GOODS',
       'HSN CODE',
-      'weight(In GM)',
-      'Rate(per GM)',
+      'Weight(In GM)',
+      'Rate(per KG)',
       'Taxable-Value',
     ];
     return pw.Expanded(
@@ -835,6 +850,17 @@ class Invoice {
             border: const pw.TableBorder(
               left: pw.BorderSide(color: PdfColors.black),
               right: pw.BorderSide(color: PdfColors.black),
+            ),
+            columnWidths: {
+              0: const pw.FixedColumnWidth(4.8),
+              1: const pw.FixedColumnWidth(10),
+              2: const pw.FixedColumnWidth(6),
+              3: const pw.FixedColumnWidth(4.9),
+              4: const pw.FixedColumnWidth(9),
+              5: const pw.FixedColumnWidth(7),
+            },
+            headerCellDecoration: pw.BoxDecoration(
+              border: pw.Border.all(color: PdfColors.black),
             ),
             cellAlignment: pw.Alignment.centerLeft,
             headerDecoration: pw.BoxDecoration(
@@ -852,28 +878,12 @@ class Invoice {
             },
             headerStyle: const pw.TextStyle(
               color: PdfColors.black,
-              fontSize: 10,
+              fontSize: 9,
             ),
-            // cellStyle: const pw.TextStyle(
-            //   color: _darkColor,
-            //   fontSize: 10,
-            // ),
-            // rowDecoration: pw.BoxDecoration(
-            // border: pw.Border(
-            //   bottom: pw.BorderSide(
-            //     color: accentColor,
-            //     // width: .5,
-            //   ),
-            // ),
-            // ),
             headers: List<String>.generate(
               tableHeaders.length,
               (col) => tableHeaders[col],
             ),
-            // data: List<List<String>>.generate(1, (index) => List<String>.generate(
-            //   tableHeaders.length,
-            //   (col) => '',
-            // )),
             data: List<List<String>>.generate(
               products.length,
               (row) => List<String>.generate(
@@ -901,9 +911,9 @@ class Product {
   final String sno;
   final String productName;
   final String hsnCode;
-  final String weight;
-  final String rate;
-  final String total;
+  final double weight;
+  final double rate;
+  final double total;
 
   String getIndex(int index) {
     switch (index) {
@@ -916,9 +926,9 @@ class Product {
       case 3:
         return weight.toString();
       case 4:
-        return rate.toString();
+        return _currencyFormat(rate);
       case 5:
-        return total;
+        return _currencyFormat(total);
     }
     return '';
   }
@@ -929,4 +939,9 @@ String _formatDate(String date) {
       "${date.split("-")[2]}-${date.split("-")[1]}-${date.split("-")[0]}");
   final format = DateFormat.yMMMd('en_US');
   return format.format(temp);
+}
+
+String _currencyFormat(double value) {
+  final format = NumberFormat.currency(name: "");
+  return format.format(value);
 }

@@ -13,6 +13,8 @@ import '../../Models/party_change_notifier.dart';
 import '../../widgets/custom_button.dart';
 import '../../widgets/my_search_delegate.dart';
 
+enum RTGS { completed, pending, notRequired }
+
 class EditInvoicePage extends StatefulWidget {
   final InvoiceResultModel invoice;
   const EditInvoicePage({Key? key, required this.invoice}) : super(key: key);
@@ -46,10 +48,19 @@ class _AddInvoiceState extends State<EditInvoicePage> {
   TextEditingController cityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
-  bool isLoad = false, isCash = false, isUPI = false, isCheque = false;
-  late ItemModel defaultItem;
-  late PartyModel selectedParty;
+
+  bool isLoad = false,
+      isCash = false,
+      isUPI = false,
+      isCheque = false,
+      isRTGS = false;
+  String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
+  ItemModel defaultItem = ItemModel(title: "");
+  PartyModel selectedParty = PartyModel(state: "Uttar Pradesh");
   late List<ItemModel> itemList;
+  RTGS rtgs = RTGS.notRequired;
+
+  late ItemChangeNotifier item;
 
   Future<void> itemDialog() async {
     await showDialog(
@@ -90,10 +101,11 @@ class _AddInvoiceState extends State<EditInvoicePage> {
         .fetchItemList()
         .then((value) {
       itemList = Provider.of<ItemChangeNotifier>(context, listen: false).lst;
-      defaultItem = ItemModel(
-        title: widget.invoice.title,
-        hsn: widget.invoice.hsn,
-      );
+
+      // defaultItem = ItemModel(
+      //   title: widget.invoice.title,
+      //   hsn: widget.invoice.hsn,
+      // );
       selectedParty = PartyModel(
         partyId: widget.invoice.partyId,
         name: widget.invoice.name,
@@ -110,6 +122,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
         hsn: widget.invoice.hsn,
       );
     });
+
+    date = widget.invoice.date!;
 
     // setting item values
     final item = Provider.of<ItemChangeNotifier>(context, listen: false);
@@ -150,6 +164,12 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     isCheque = widget.invoice.isCheque == 1;
     bankNameController.text = widget.invoice.bankName.toString();
     chequeAmountController.text = widget.invoice.receivedInCheque.toString();
+    isRTGS = widget.invoice.isRTGS == 1;
+    rtgs = widget.invoice.rtgsState == "Completed"
+        ? RTGS.completed
+        : widget.invoice.rtgsState == "Pending"
+            ? RTGS.pending
+            : RTGS.notRequired;
     chequeNumberController.text = widget.invoice.chequeNumber.toString();
     dateController.text = widget.invoice.date!;
     invoiceNoController.text = widget.invoice.id!.toString();
@@ -186,7 +206,29 @@ class _AddInvoiceState extends State<EditInvoicePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Edit Invoice'),
+        title: Text('Invoice No. :- ${widget.invoice.id}'),
+        actions: [
+          InkWell(
+            onTap: () async {
+              DateTime res = await showDatePicker(
+                    context: context,
+                    initialDate: DateTime.now(),
+                    firstDate: DateTime(2000),
+                    lastDate: DateTime.now(),
+                  ) ??
+                  DateTime.now();
+              date = DateFormat('dd-MM-yyyy').format(res);
+              setState(() {});
+            },
+            child: Center(
+              child: Text(
+                date,
+                textScaleFactor: 1.3,
+              ),
+            ),
+          ),
+          const SizedBox(width: 10),
+        ],
       ),
       body: isLoad
           ? const Center(
@@ -200,45 +242,6 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Row(
-                        children: [
-                          Expanded(
-                            child: TextFormField(
-                              controller: invoiceNoController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                hintText: "Invoice No.",
-                                labelText: "Invoice No.",
-                                border: OutlineInputBorder(),
-                              ),
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Expanded(
-                            child: TextFormField(
-                              controller: dateController,
-                              readOnly: true,
-                              decoration: const InputDecoration(
-                                hintText: "Invoice Date",
-                                labelText: "Invoice Date",
-                                border: OutlineInputBorder(),
-                              ),
-                              onTap: () async {
-                                DateTime res = await showDatePicker(
-                                      context: context,
-                                      initialDate: DateTime.now(),
-                                      firstDate: DateTime(2000),
-                                      lastDate: DateTime.now(),
-                                    ) ??
-                                    DateTime.now();
-                                dateController.text =
-                                    DateFormat('dd-MM-yyyy').format(res);
-                              },
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 10),
                       const Text(
                         "Client Details",
                         style: TextStyle(
@@ -301,45 +304,52 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                         ),
                       ),
                       const SizedBox(height: 10),
-                      const Text(
-                        "Items",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
-                      ),
-                      const SizedBox(height: 10),
-                      Consumer<ItemChangeNotifier>(
-                        builder: (BuildContext context, value, Widget? child) {
-                          if (value.lst.isEmpty) {
-                            return Container(
-                              padding: const EdgeInsets.all(20),
-                              child: const Text("No Items"),
-                            );
-                          }
-                          if (defaultItem.title!.isEmpty) {
-                            return InkWell(
-                              onTap: () {
-                                itemDialog();
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.all(20),
-                                child: const Text("No Default Items selected"),
-                              ),
-                            );
-                          }
-                          return Card(
-                            child: ListTile(
-                              onTap: () {
-                                itemDialog();
-                              },
-                              title: Text(
-                                "${defaultItem.title!} / ${defaultItem.hsn!}",
-                              ),
-                              trailing: const Icon(Icons.expand_more),
+                      Row(
+                        children: [
+                          const Text(
+                            "Items",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
                             ),
-                          );
-                        },
+                          ),
+                          Expanded(
+                            child: Consumer<ItemChangeNotifier>(
+                              builder:
+                                  (BuildContext context, value, Widget? child) {
+                                if (value.lst.isEmpty) {
+                                  return Container(
+                                    padding: const EdgeInsets.all(20),
+                                    child: const Text("No Items"),
+                                  );
+                                }
+                                if (defaultItem.title!.isEmpty) {
+                                  return InkWell(
+                                    onTap: () {
+                                      itemDialog();
+                                    },
+                                    child: Container(
+                                      padding: const EdgeInsets.all(20),
+                                      child: const Text(
+                                          "No Default Items selected"),
+                                    ),
+                                  );
+                                }
+                                return Card(
+                                  child: ListTile(
+                                    onTap: () {
+                                      itemDialog();
+                                    },
+                                    title: Text(
+                                      "${defaultItem.title!} / ${defaultItem.hsn!}",
+                                    ),
+                                    trailing: const Icon(Icons.expand_more),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       Consumer<ItemChangeNotifier>(
@@ -478,17 +488,20 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       const Text("Cash")
                                     ],
                                   ),
-                                  TextFormField(
-                                    readOnly: !isCash,
-                                    keyboardType: TextInputType.number,
-                                    controller: cashAmountController,
-                                    validator: (val) => (val!.isEmpty && isCash)
-                                        ? "Required"
-                                        : null,
-                                    decoration: const InputDecoration(
-                                      hintText: "Amount",
-                                    ),
-                                  ),
+                                  isCash
+                                      ? TextFormField(
+                                          readOnly: !isCash,
+                                          keyboardType: TextInputType.number,
+                                          controller: cashAmountController,
+                                          validator: (val) =>
+                                              (val!.isEmpty && isCash)
+                                                  ? "Required"
+                                                  : null,
+                                          decoration: const InputDecoration(
+                                            hintText: "Amount",
+                                          ),
+                                        )
+                                      : const SizedBox(),
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [
@@ -503,17 +516,20 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       const Text("UPI")
                                     ],
                                   ),
-                                  TextFormField(
-                                    readOnly: !isUPI,
-                                    keyboardType: TextInputType.number,
-                                    validator: (val) => (val!.isEmpty && isUPI)
-                                        ? "Required"
-                                        : null,
-                                    controller: upiAmountController,
-                                    decoration: const InputDecoration(
-                                      hintText: "Amount",
-                                    ),
-                                  ),
+                                  isUPI
+                                      ? TextFormField(
+                                          readOnly: !isUPI,
+                                          keyboardType: TextInputType.number,
+                                          validator: (val) =>
+                                              (val!.isEmpty && isUPI)
+                                                  ? "Required"
+                                                  : null,
+                                          controller: upiAmountController,
+                                          decoration: const InputDecoration(
+                                            hintText: "Amount",
+                                          ),
+                                        )
+                                      : const SizedBox(),
                                   const SizedBox(height: 20),
                                   Row(
                                     children: [
@@ -528,43 +544,99 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       const Text("Cheque")
                                     ],
                                   ),
-                                  TextFormField(
-                                    readOnly: !isCheque,
-                                    validator: (val) =>
-                                        (val!.isEmpty && isCheque)
-                                            ? "Required"
-                                            : null,
-                                    controller: bankNameController,
-                                    decoration: const InputDecoration(
-                                      hintText: "Bank Name",
-                                    ),
+                                  isCheque
+                                      ? Column(
+                                          children: [
+                                            TextFormField(
+                                              readOnly: !isCheque,
+                                              validator: (val) =>
+                                                  (val!.isEmpty && isCheque)
+                                                      ? "Required"
+                                                      : null,
+                                              controller: bankNameController,
+                                              decoration: const InputDecoration(
+                                                hintText: "Bank Name",
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            TextFormField(
+                                              readOnly: !isCheque,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              validator: (val) =>
+                                                  (val!.isEmpty && isCheque)
+                                                      ? "Required"
+                                                      : null,
+                                              controller:
+                                                  chequeNumberController,
+                                              decoration: const InputDecoration(
+                                                hintText: "Cheque Number",
+                                              ),
+                                            ),
+                                            const SizedBox(height: 10),
+                                            TextFormField(
+                                              readOnly: !isCheque,
+                                              keyboardType:
+                                                  TextInputType.number,
+                                              validator: (val) =>
+                                                  (val!.isEmpty && isCheque)
+                                                      ? "Required"
+                                                      : null,
+                                              controller:
+                                                  chequeAmountController,
+                                              decoration: const InputDecoration(
+                                                hintText: "Amount",
+                                              ),
+                                            ),
+                                          ],
+                                        )
+                                      : const SizedBox(),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isRTGS,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isRTGS = val!;
+                                          });
+                                        },
+                                      ),
+                                      const Text("RTGS")
+                                    ],
                                   ),
-                                  const SizedBox(height: 10),
-                                  TextFormField(
-                                    readOnly: !isCheque,
-                                    keyboardType: TextInputType.number,
-                                    validator: (val) =>
-                                        (val!.isEmpty && isCheque)
-                                            ? "Required"
-                                            : null,
-                                    controller: chequeNumberController,
-                                    decoration: const InputDecoration(
-                                      hintText: "Cheque Number",
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  TextFormField(
-                                    readOnly: !isCheque,
-                                    keyboardType: TextInputType.number,
-                                    validator: (val) =>
-                                        (val!.isEmpty && isCheque)
-                                            ? "Required"
-                                            : null,
-                                    controller: chequeAmountController,
-                                    decoration: const InputDecoration(
-                                      hintText: "Amount",
-                                    ),
-                                  ),
+                                  isRTGS
+                                      ? Column(
+                                          children: [
+                                            Row(
+                                              children: [
+                                                Radio(
+                                                    value: RTGS.completed,
+                                                    groupValue: rtgs,
+                                                    onChanged: (RTGS? val) {
+                                                      setState(() {
+                                                        rtgs = val!;
+                                                      });
+                                                    }),
+                                                const Text("Completed"),
+                                              ],
+                                            ),
+                                            Row(
+                                              children: [
+                                                Radio(
+                                                    value: RTGS.pending,
+                                                    groupValue: rtgs,
+                                                    onChanged: (RTGS? val) {
+                                                      setState(() {
+                                                        rtgs = val!;
+                                                      });
+                                                    }),
+                                                const Text("Pending"),
+                                              ],
+                                            ),
+                                          ],
+                                        )
+                                      : const SizedBox(),
                                 ],
                               ),
                             ),
@@ -584,38 +656,42 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                   onTap: () {},
                                 ),
                                 const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: csgtController,
-                                  readOnly: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "CGST",
-                                    labelText: "CGST",
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  onTap: () {},
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: scgstController,
-                                  readOnly: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "SGST",
-                                    labelText: "SGST",
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  onTap: () {},
-                                ),
-                                const SizedBox(height: 10),
-                                TextFormField(
-                                  controller: igstController,
-                                  readOnly: true,
-                                  decoration: const InputDecoration(
-                                    hintText: "IGST",
-                                    labelText: "IGST",
-                                    border: OutlineInputBorder(),
-                                  ),
-                                  onTap: () {},
-                                ),
+                                selectedParty.state == "Uttar Pradesh"
+                                    ? Column(
+                                        children: [
+                                          TextFormField(
+                                            controller: csgtController,
+                                            readOnly: true,
+                                            decoration: const InputDecoration(
+                                              hintText: "CGST",
+                                              labelText: "CGST",
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            onTap: () {},
+                                          ),
+                                          const SizedBox(height: 10),
+                                          TextFormField(
+                                            controller: scgstController,
+                                            readOnly: true,
+                                            decoration: const InputDecoration(
+                                              hintText: "SGST",
+                                              labelText: "SGST",
+                                              border: OutlineInputBorder(),
+                                            ),
+                                            onTap: () {},
+                                          ),
+                                        ],
+                                      )
+                                    : TextFormField(
+                                        controller: igstController,
+                                        readOnly: true,
+                                        decoration: const InputDecoration(
+                                          hintText: "IGST",
+                                          labelText: "IGST",
+                                          border: OutlineInputBorder(),
+                                        ),
+                                        onTap: () {},
+                                      ),
                                 const SizedBox(height: 10),
                                 TextFormField(
                                   controller: totalAmountController,
@@ -717,6 +793,12 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                         0,
                                 chequeNumber: chequeNumberController.text,
                                 bankName: bankNameController.text,
+                                isRTGS: isRTGS == true ? 1 : 0,
+                                rtgsState: rtgs == RTGS.completed
+                                    ? "Completed"
+                                    : rtgs == RTGS.pending
+                                        ? "Pending"
+                                        : "",
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)

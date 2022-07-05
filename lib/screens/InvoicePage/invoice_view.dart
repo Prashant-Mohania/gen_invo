@@ -50,8 +50,11 @@ class _InvoiceViewState extends State<InvoiceView> {
         title: const Text('Invoice'),
         actions: [
           IconButton(
-            onPressed: () {},
-            icon: const Icon(Icons.whatsapp),
+            onPressed: () async {
+              await Printing.layoutPdf(
+                  onLayout: (_) => generateInvoice(invoice));
+            },
+            icon: const Icon(Icons.print),
           ),
         ],
       ),
@@ -60,10 +63,7 @@ class _InvoiceViewState extends State<InvoiceView> {
               child: CircularProgressIndicator(),
             )
           : PdfPreview(
-              allowPrinting: false,
-              allowSharing: false,
-              canChangeOrientation: false,
-              canChangePageFormat: false,
+              useActions: false,
               padding: const EdgeInsets.all(0),
               build: (format) => generateInvoice(invoice),
             ),

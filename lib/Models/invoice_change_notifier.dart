@@ -31,7 +31,7 @@ class InvoiceChangeNotifier extends ChangeNotifier {
     });
   }
 
-  remove(InvoiceModel invoice) async {
+  remove(InvoiceResultModel invoice) async {
     await dbClient.deleteInvoice(invoice).then((value) {
       fetchInvoiceList();
       // lst.remove(invoice);
@@ -39,8 +39,19 @@ class InvoiceChangeNotifier extends ChangeNotifier {
     });
   }
 
-  Future<InvoiceResultModel> getInvoiceById(int id) async {
+  updateAdjusted(InvoiceResultModel invoice) async {
+    await dbClient.updateAdjusted(invoice).then((value) {
+      fetchInvoiceList();
+    });
+  }
+
+  getInvoiceById(int id) async {
     final res = await dbClient.getInvoiceById(id);
+    return res;
+  }
+
+  Future<List<InvoiceResultModel>> getInvoiceListBypartyId(int id) async {
+    final res = await dbClient.getInvoiceListByPartyId(id);
     return res;
   }
 }

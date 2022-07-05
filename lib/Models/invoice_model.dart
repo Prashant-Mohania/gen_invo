@@ -9,9 +9,11 @@ class InvoiceModel {
       receivedInUPI,
       isCheque,
       receivedInCheque,
+      isRTGS,
       netAmount,
       totalAmountWithRounding,
-      netBalance;
+      netBalance,
+      isAdjusted;
   double? weightInGrams,
       ratePerGram,
       totalCost,
@@ -19,7 +21,7 @@ class InvoiceModel {
       sgst,
       igst,
       totalAmountWithoutRounding;
-  String? date, chequeNumber, bankName;
+  String? date, chequeNumber, bankName, rtgsState;
 
   InvoiceModel({
     this.id,
@@ -34,6 +36,8 @@ class InvoiceModel {
     this.receivedInCheque,
     this.bankName,
     this.chequeNumber,
+    this.isRTGS,
+    this.rtgsState,
     this.netAmount,
     this.totalAmountWithRounding,
     this.weightInGrams,
@@ -45,6 +49,7 @@ class InvoiceModel {
     this.totalAmountWithoutRounding,
     this.date,
     this.netBalance,
+    this.isAdjusted = 0,
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
@@ -59,6 +64,8 @@ class InvoiceModel {
         isCheque: json["isCheque"],
         receivedInCheque: json["receivedInCheque"],
         bankName: json["bankName"],
+        isRTGS: json['isRTGS'],
+        rtgsState: json['rtgsState'],
         netAmount: json["netAmount"],
         totalAmountWithRounding: json["totalAmountWithRounding"],
         weightInGrams: json["weightInGrams"],
@@ -70,6 +77,7 @@ class InvoiceModel {
         totalAmountWithoutRounding: json["totalAmountWithoutRounding"],
         date: json["date"],
         netBalance: json["netBalance"],
+        isAdjusted: json["isAdjusted"],
       );
 
   Map<String, dynamic> toJson() {
@@ -86,6 +94,8 @@ class InvoiceModel {
     data["receivedInCheque"] = receivedInCheque;
     data["bankName"] = bankName;
     data["chequeNumber"] = chequeNumber;
+    data["isRTGS"] = isRTGS;
+    data["rtgsState"] = rtgsState;
     data["netAmount"] = netAmount;
     data["totalAmountWithRounding"] = totalAmountWithRounding;
     data["weightInGrams"] = weightInGrams;
@@ -97,6 +107,7 @@ class InvoiceModel {
     data["totalAmountWithoutRounding"] = totalAmountWithoutRounding;
     data["date"] = date;
     data['netBalance'] = netAmount! - receivedInCash!;
+    data['isAdjusted'] = isAdjusted;
     return data;
   }
 
@@ -111,9 +122,13 @@ class InvoiceModel {
     int? receivedInUPI,
     int? isCheque,
     int? receivedInCheque,
+    String? bankName,
+    int? isRTGS,
+    String? rtgsState,
     int? netAmount,
     int? totalAmountWithRounding,
     int? netBalance,
+    int? isAdjusted,
     double? weightInGrams,
     double? ratePerGram,
     double? totalCost,
@@ -135,7 +150,10 @@ class InvoiceModel {
       receivedInUPI: receivedInUPI ?? this.receivedInUPI,
       isCheque: isCheque ?? this.isCheque,
       receivedInCheque: receivedInCheque ?? this.receivedInCheque,
+      bankName: bankName ?? this.bankName,
       chequeNumber: chequeNumber ?? this.chequeNumber,
+      isRTGS: isRTGS ?? this.isRTGS,
+      rtgsState: rtgsState ?? this.rtgsState,
       netAmount: netAmount ?? this.netAmount,
       totalAmountWithRounding:
           totalAmountWithRounding ?? this.totalAmountWithRounding,
@@ -149,6 +167,7 @@ class InvoiceModel {
           totalAmountWithoutRounding ?? this.totalAmountWithoutRounding,
       date: date ?? this.date,
       netBalance: netBalance ?? this.netBalance,
+      isAdjusted: isAdjusted ?? this.isAdjusted,
     );
   }
 }

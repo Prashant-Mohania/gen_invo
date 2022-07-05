@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/party_change_notifier.dart';
 import 'package:gen_invo/screens/PartiesPage/add_parties_page.dart';
 import 'package:gen_invo/screens/PartiesPage/party_details_page.dart';
+import 'package:gen_invo/screens/PartiesPage/party_invoice_page.dart';
 import 'package:provider/provider.dart';
 
 import '../../widgets/party_search.dart';
@@ -61,6 +62,13 @@ class PartiesPage extends StatelessWidget {
                                 builder: (_) => PartyDetailsPage(
                                       party: party.lst[index],
                                     )));
+                      },
+                      onLongPress: () {
+                        Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                                builder: (_) =>
+                                    PartyInvoicePage(party: party.lst[index])));
                       },
                       title: Text(party.lst[index].name!),
                       subtitle: Text(

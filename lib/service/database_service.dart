@@ -73,8 +73,11 @@ CREATE TABLE invoice (
   bankName TEXT NOT NULL,
   chequeNumber TEXT NOT NULL,
   receivedInCheque INTEGER NOT NULL,
+  isRTGS INTEGER NOT NULL,
+  rtgsState TEXT NOT NULL,
   netAmount INTEGER NOT NULL,
-  netBalance INTEGER NOT NULL
+  netBalance INTEGER NOT NULL,
+  isAdjusted INTEGER NOT NULL
   )
 ''');
 
@@ -178,9 +181,15 @@ LEFT JOIN item ON invoice.iId = item.itemId
         where: "id = ?", whereArgs: [invoice.id]);
   }
 
-  Future<void> deleteInvoice(InvoiceModel invoice) async {
+  Future<void> deleteInvoice(InvoiceResultModel invoice) async {
     final db = await instance.database;
     await db.delete("invoice", where: "id = ?", whereArgs: [invoice.id]);
+  }
+
+  Future<void> updateAdjusted(InvoiceResultModel invoice) async {
+    final db = await instance.database;
+    await db.update("invoice", {"isAdjusted": invoice.isAdjusted},
+        where: "id = ?", whereArgs: [invoice.id]);
   }
 
   Future<InvoiceResultModel> getInvoiceById(int id) async {
@@ -192,6 +201,17 @@ LEFT JOIN item ON invoice.iId = item.itemId
 WHERE id = $id
 """);
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList().first;
+  }
+
+  Future<List<InvoiceResultModel>> getInvoiceListByPartyId(int partyId) async {
+    final db = await instance.database;
+    final res = await db.rawQuery("""
+SELECT * FROM invoice
+LEFT JOIN party ON invoice.pId = party.partyId
+LEFT JOIN item ON invoice.iId = item.itemId
+WHERE pId = $partyId
+""");
+    return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 
   // ------------------------------------------- Company CRUD --------------------------------
