@@ -1,3 +1,5 @@
+import 'package:intl/intl.dart';
+
 class InvoiceResultModel {
   int? id,
       pId,
@@ -138,7 +140,7 @@ class InvoiceResultModel {
     data["chequeNumber"] = chequeNumber;
     data["isRTGS"] = isRTGS;
     data["rtgsState"] = rtgsState;
-    data["netAmount"] = netAmount;
+    data["netAmount"] = _currencyFormat(netAmount!);
     data["totalAmountWithRounding"] = totalAmountWithRounding;
     data["weightInGrams"] = weightInGrams;
     data["ratePerGram"] = ratePerGram;
@@ -148,7 +150,7 @@ class InvoiceResultModel {
     data["igst"] = igst;
     data["totalAmountWithoutRounding"] = totalAmountWithoutRounding;
     data["date"] = date;
-    data['netBalance'] = netAmount! - receivedInCash!;
+    data['netBalance'] = _currencyFormat(netAmount! - receivedInCash!);
     data['partyId'] = partyId;
     data['name'] = name;
     data['mobile'] = mobile;
@@ -163,5 +165,13 @@ class InvoiceResultModel {
     data['isDefault'] = isDefault ?? 0;
     data['isAdjusted'] = isAdjusted ?? 0;
     return data;
+  }
+
+  String _currencyFormat(int value) {
+    final format = NumberFormat.currency(
+      locale: "HI",
+      symbol: "",
+    );
+    return format.format(value);
   }
 }

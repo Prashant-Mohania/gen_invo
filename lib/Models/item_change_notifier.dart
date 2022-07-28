@@ -54,38 +54,50 @@ class ItemChangeNotifier extends ChangeNotifier {
 
   // invoice Calculations
   double subTotalAmount(double total) {
-    subTotal = total;
+    subTotal = double.tryParse(total.toStringAsFixed(2))!;
+    // subTotal = ;
     return total;
   }
 
   double taxCalculation() {
     taxAmnt = subTotal * tax;
+    taxAmnt = double.tryParse(taxAmnt.toStringAsFixed(2))!;
+
     return taxAmnt;
   }
 
   double igstCalculation() {
     igstAmnt = subTotal * igst;
+    igstAmnt = double.tryParse(igstAmnt.toStringAsFixed(2))!;
+
     return igstAmnt;
   }
 
   double totalAmount() {
     totalAmnt = subTotal + taxAmnt + taxAmnt + igstAmnt;
+    totalAmnt = double.tryParse(totalAmnt.toStringAsFixed(2))!;
+
     return totalAmnt;
   }
 
   double roundOff() {
     roundOffAmnt = totalAmnt.round() - totalAmnt;
+    roundOffAmnt = double.tryParse(roundOffAmnt.toStringAsFixed(2))!;
     return roundOffAmnt;
   }
 
   double discountAmount(double amnt) {
     discountAmnt = amnt;
+    discountAmnt = double.tryParse(discountAmnt.toStringAsFixed(2))!;
+
     return discountAmnt;
     // return subTotalAmount() * discount;
   }
 
   double finalAmount() {
     finalAmnt = totalAmnt + roundOffAmnt - discountAmnt;
+    finalAmnt = double.tryParse(finalAmnt.toStringAsFixed(2))!;
+
     return finalAmnt;
   }
 

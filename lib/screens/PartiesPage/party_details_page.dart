@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/party_model.dart';
 
+import '../../widgets/custom_button.dart';
+import 'edit_party_page.dart';
+
 class PartyDetailsPage extends StatelessWidget {
   final PartyModel party;
   const PartyDetailsPage({Key? key, required this.party}) : super(key: key);
@@ -14,142 +17,155 @@ class PartyDetailsPage extends StatelessWidget {
         ),
         body: Padding(
           padding: const EdgeInsets.all(20),
-          child: Table(
-            border: TableBorder.all(width: 1),
-            columnWidths: const {
-              0: FlexColumnWidth(1.0),
-              1: FlexColumnWidth(2.0),
-            },
+          child: Column(
             children: [
-              TableRow(
+              Table(
+                border: TableBorder.all(width: 1),
+                columnWidths: const {
+                  0: FlexColumnWidth(1.0),
+                  1: FlexColumnWidth(2.0),
+                },
                 children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "Name",
-                      textScaleFactor: 1.4,
-                    ),
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "Name",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.name!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.name!,
-                      textScaleFactor: 1.4,
-                    ),
+                  TableRow(
+                    decoration: BoxDecoration(color: Colors.grey[300]),
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "Address",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.address!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "GSTIN",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.gst!.toUpperCase(),
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    decoration: BoxDecoration(color: Colors.grey[300]),
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "Mobile",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.mobile!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "Email",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.email!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    decoration: BoxDecoration(color: Colors.grey[300]),
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "City",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.city!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
+                  ),
+                  TableRow(
+                    children: [
+                      const Padding(
+                        padding: EdgeInsets.all(8),
+                        child: Text(
+                          "State",
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.all(8),
+                        child: Text(
+                          party.state!,
+                          textScaleFactor: 1.4,
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
-              TableRow(
-                decoration: BoxDecoration(color: Colors.grey[300]),
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "Address",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.address!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "GSTIN",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.gst!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                decoration: BoxDecoration(color: Colors.grey[300]),
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "Mobile",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.mobile!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "Email",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.email!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                decoration: BoxDecoration(color: Colors.grey[300]),
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "City",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.city!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
-              TableRow(
-                children: [
-                  const Padding(
-                    padding: EdgeInsets.all(8),
-                    child: Text(
-                      "State",
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.all(8),
-                    child: Text(
-                      party.state!,
-                      textScaleFactor: 1.4,
-                    ),
-                  ),
-                ],
-              ),
+              const SizedBox(height: 40),
+              CustomButton(
+                  text: "Edit",
+                  callback: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (_) => EditPartyPage(party: party)));
+                  })
             ],
           ),
           // child: Column(
@@ -189,15 +205,15 @@ class PartyDetailsPage extends StatelessWidget {
           //       "GSTIN:-  ${party.gst}",
           //       style: const TextStyle(fontSize: 20),
           //     ),
-          //     const Spacer(),
-          //     CustomButton(
-          //         text: "Edit",
-          //         callback: () {
-          //           Navigator.push(
-          //               context,
-          //               MaterialPageRoute(
-          //                   builder: (_) => EditPartyPage(party: party)));
-          //         })
+          // const Spacer(),
+          // CustomButton(
+          //     text: "Edit",
+          //     callback: () {
+          //       Navigator.push(
+          //           context,
+          //           MaterialPageRoute(
+          //               builder: (_) => EditPartyPage(party: party)));
+          //     })
           //   ],
           // ),
         ),

@@ -30,7 +30,8 @@ Future<Uint8List> generateInvoice(InvoiceResultModel invoiceData) async {
     invoiceNumber: invoiceData.id.toString(),
     products: products,
     customerName: invoiceData.name!,
-    customerAddress: invoiceData.address!,
+    customerAddress:
+        invoiceData.address!.isEmpty ? invoiceData.city! : invoiceData.address!,
     customerGST: invoiceData.gst!.toString(),
   );
 
@@ -127,7 +128,7 @@ class Invoice {
             "${companyData.name}",
             style: pw.TextStyle(
               fontWeight: pw.FontWeight.bold,
-              fontSize: 36,
+              fontSize: 30,
               color: const PdfColor(.12, .29, .49),
             ),
             textAlign: pw.TextAlign.center,
@@ -924,9 +925,9 @@ class Product {
       case 2:
         return hsnCode.toString();
       case 3:
-        return weight.toString();
+        return weight.toStringAsFixed(0);
       case 4:
-        return _currencyFormat(rate);
+        return _currencyFormat(rate, decimalDigit: 0);
       case 5:
         return _currencyFormat(total);
     }
@@ -941,7 +942,11 @@ String _formatDate(String date) {
   return format.format(temp);
 }
 
-String _currencyFormat(double value) {
-  final format = NumberFormat.currency(name: "");
+String _currencyFormat(double value, {int decimalDigit = 2}) {
+  final format = NumberFormat.currency(
+    locale: "HI",
+    symbol: "",
+    decimalDigits: decimalDigit,
+  );
   return format.format(value);
 }

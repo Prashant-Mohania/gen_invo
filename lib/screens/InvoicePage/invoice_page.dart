@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
+import 'package:gen_invo/Models/item_change_notifier.dart';
 import 'package:gen_invo/screens/InvoicePage/add_invoice_page.dart';
 import 'package:gen_invo/screens/InvoicePage/edit_invoice_page.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/widgets/my_drawer.dart';
 import 'package:gen_invo/widgets/invoice_search.dart';
+import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
 
-import '../../Models/invoice_result_model.dart';
+import '../../utils/save_file.dart';
 
 class InvoicePage extends StatelessWidget {
   const InvoicePage({Key? key}) : super(key: key);
@@ -24,6 +26,7 @@ class InvoicePage extends StatelessWidget {
                 final temp =
                     Provider.of<InvoiceChangeNotifier>(context, listen: false)
                         .lst;
+                Provider.of<ItemChangeNotifier>(context, listen: false).close();
                 showSearch(context: context, delegate: InvoiceSearch(temp));
               },
               icon: const Icon(Icons.search),
@@ -69,11 +72,18 @@ class InvoicePage extends StatelessWidget {
 
                 return ListView.builder(
                   padding: const EdgeInsets.all(20),
+                  // reverse: true,
                   itemCount: invoices.lst.length,
                   itemBuilder: (context, index) {
                     return Card(
                       child: ListTile(
+                        tileColor: invoices.lst[index].id!.isEven
+                            ? Colors.white
+                            : Colors.grey[200],
                         onTap: () {
+                          Provider.of<ItemChangeNotifier>(context,
+                                  listen: false)
+                              .close();
                           Navigator.push(
                             context,
                             MaterialPageRoute(
@@ -82,15 +92,55 @@ class InvoicePage extends StatelessWidget {
                             ),
                           );
                         },
-                        title: Text(
-                            "${invoices.lst[index].id!} ${invoices.lst[index].name ?? "No Name"}"),
+                        title: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                                "${invoices.lst[index].id!} ${invoices.lst[index].name ?? "No Name"}"),
+                            Text(
+                              invoices.lst[index].isCash == 1 &&
+                                      invoices.lst[index].isUPI == 1 &&
+                                      invoices.lst[index].isCheque == 1
+                                  ? "By Cash, UPI and Cheque"
+                                  : invoices.lst[index].isCash == 1 &&
+                                          invoices.lst[index].isUPI == 1
+                                      ? "By Cash and UPI"
+                                      : invoices.lst[index].isUPI == 1 &&
+                                              invoices.lst[index].isCheque == 1
+                                          ? "By UPI and Cheque"
+                                          : invoices.lst[index].isCash == 1 &&
+                                                  invoices.lst[index]
+                                                          .isCheque ==
+                                                      1
+                                              ? "By Cash and Cheque"
+                                              : invoices.lst[index].isCash == 1
+                                                  ? "By Cash"
+                                                  : invoices.lst[index].isUPI ==
+                                                          1
+                                                      ? "By UPI"
+                                                      : "By Cheque",
+                            ),
+                          ],
+                        ),
                         subtitle: Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text("₹ ${invoices.lst[index].netAmount!}"),
-                            Text("${invoices.lst[index].date!}"),
+                            Text(
+                                "₹ ${_currencyFormat(invoices.lst[index].netAmount!)}"),
+                            Text(invoices.lst[index].date!),
                           ],
                         ),
+                        onLongPress: () {
+                          deleteConfirm(context).then((value) {
+                            if (value) {
+                              SaveFile.deleteFile(
+                                  context,
+                                  "${invoices.lst[index].id}_${invoices.lst[index].name}",
+                                  invoices.lst[index]);
+                              invoices.remove(invoices.lst[index]);
+                            }
+                          });
+                        },
                         // leading: IconButton(
                         //   onPressed: () {
                         //     changeAdjusted(context, invoices.lst[index]);
@@ -99,16 +149,20 @@ class InvoicePage extends StatelessWidget {
                         //       ? Icons.done
                         //       : Icons.close),
                         // ),
-                        trailing: IconButton(
-                          onPressed: () {
-                            deleteConfirm(context).then((value) {
-                              if (value) {
-                                invoices.remove(invoices.lst[index]);
-                              }
-                            });
-                          },
-                          icon: const Icon(Icons.delete),
-                        ),
+                        // trailing: IconButton(
+                        //   onPressed: () {
+                        //     deleteConfirm(context).then((value) {
+                        //       if (value) {
+                        //         SaveFile.deleteFile(
+                        //             context,
+                        //             "${invoices.lst[index].id}_${invoices.lst[index].name}",
+                        //             invoices.lst[index]);
+                        //         invoices.remove(invoices.lst[index]);
+                        //       }
+                        //     });
+                        //   },
+                        //   icon: const Icon(Icons.delete),
+                        // ),
                       ),
                     );
                   },
@@ -145,5 +199,11 @@ class InvoicePage extends StatelessWidget {
         );
       },
     );
+  }
+
+  String _currencyFormat(int value) {
+    final format =
+        NumberFormat.currency(locale: "HI", symbol: "", decimalDigits: 0);
+    return format.format(value);
   }
 }

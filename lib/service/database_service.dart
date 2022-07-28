@@ -165,6 +165,7 @@ CREATE TABLE company (
 SELECT * FROM invoice
 LEFT JOIN party ON invoice.pId = party.partyId
 LEFT JOIN item ON invoice.iId = item.itemId
+ORDER BY invoice.id DESC
 """);
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }

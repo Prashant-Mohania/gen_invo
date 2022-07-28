@@ -1,3 +1,5 @@
+// ignore_for_file: use_build_context_synchronously
+
 import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/Models/invoice_model.dart';
@@ -328,10 +330,18 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       setState(() {
                                         selectedParty.state = res;
                                       });
-                                      double tax =
-                                          selectedParty.state == "Uttar Pradesh"
-                                              ? item.taxCalculation()
-                                              : 0.0;
+                                      double tax;
+                                      if (selectedParty.state ==
+                                          "Uttar Pradesh") {
+                                        tax = item.taxCalculation();
+                                        item.igstAmnt = 0.0;
+                                      } else {
+                                        tax = item.igstCalculation();
+                                        item.taxAmnt = 0.0;
+                                      }
+                                      // selectedParty.state == "Uttar Pradesh"
+                                      //     ? item.taxCalculation()
+                                      //     : 0.0;
                                       csgtController.text =
                                           tax.toStringAsFixed(2);
                                       scgstController.text =
@@ -473,7 +483,8 @@ class _AddInvoiceState extends State<AddInvoice> {
                                           ? double.parse(weightController.text)
                                           : 0.0;
                                   double rate = val.isNotEmpty
-                                      ? double.tryParse(rateController.text)!
+                                      ? double.tryParse(rateController.text) ??
+                                          0
                                       : 0.0;
 
                                   double subAmnt = items
@@ -534,6 +545,8 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       Checkbox(
                                         value: isCash,
                                         onChanged: (bool? val) {
+                                          cashAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isCash = val!;
                                           });
@@ -562,6 +575,8 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       Checkbox(
                                         value: isUPI,
                                         onChanged: (bool? val) {
+                                          upiAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isUPI = val!;
                                           });
@@ -590,6 +605,8 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       Checkbox(
                                         value: isCheque,
                                         onChanged: (bool? val) {
+                                          chequeAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isCheque = val!;
                                           });
@@ -603,10 +620,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                           children: [
                                             TextFormField(
                                               readOnly: !isCheque,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller: bankNameController,
                                               decoration: const InputDecoration(
                                                 hintText: "Bank Name",
@@ -617,10 +634,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                               readOnly: !isCheque,
                                               keyboardType:
                                                   TextInputType.number,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller:
                                                   chequeNumberController,
                                               decoration: const InputDecoration(
@@ -632,10 +649,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                               readOnly: !isCheque,
                                               keyboardType:
                                                   TextInputType.number,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller:
                                                   chequeAmountController,
                                               decoration: const InputDecoration(
@@ -830,7 +847,13 @@ class _AddInvoiceState extends State<AddInvoice> {
                                 id = res.partyId;
                               }
                             }
-                            if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate() &&
+                                defaultItem.title != "") {
+                              if (!isCash && !isCheque && !isUPI) {
+                                isCash = true;
+                                cashAmountController.text =
+                                    finalAmountController.text;
+                              }
                               InvoiceModel invoice = InvoiceModel(
                                 id: widget.invoiceNo,
                                 pId: id,
@@ -874,7 +897,6 @@ class _AddInvoiceState extends State<AddInvoice> {
                                         ? "Pending"
                                         : "",
                               );
-                              // ignore: use_build_context_synchronously
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)
                                   .add(invoice)
@@ -889,6 +911,15 @@ class _AddInvoiceState extends State<AddInvoice> {
                               });
 
                               item.close();
+                            } else {
+                              ScaffoldMessenger.of(context)
+                                  .showSnackBar(const SnackBar(
+                                content: Text(
+                                    "Please fill all the fields and select an item"),
+                                duration: Duration(seconds: 2),
+                                behavior: SnackBarBehavior.floating,
+                                margin: EdgeInsets.all(20),
+                              ));
                             }
                           })
                     ],

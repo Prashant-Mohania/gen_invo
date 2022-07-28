@@ -480,6 +480,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       Checkbox(
                                         value: isCash,
                                         onChanged: (bool? val) {
+                                          cashAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isCash = val!;
                                           });
@@ -493,10 +495,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                           readOnly: !isCash,
                                           keyboardType: TextInputType.number,
                                           controller: cashAmountController,
-                                          validator: (val) =>
-                                              (val!.isEmpty && isCash)
-                                                  ? "Required"
-                                                  : null,
+                                          // validator: (val) =>
+                                          //     (val!.isEmpty && isCash)
+                                          //         ? "Required"
+                                          //         : null,
                                           decoration: const InputDecoration(
                                             hintText: "Amount",
                                           ),
@@ -508,6 +510,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       Checkbox(
                                         value: isUPI,
                                         onChanged: (bool? val) {
+                                          upiAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isUPI = val!;
                                           });
@@ -520,10 +524,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       ? TextFormField(
                                           readOnly: !isUPI,
                                           keyboardType: TextInputType.number,
-                                          validator: (val) =>
-                                              (val!.isEmpty && isUPI)
-                                                  ? "Required"
-                                                  : null,
+                                          // validator: (val) =>
+                                          //     (val!.isEmpty && isUPI)
+                                          //         ? "Required"
+                                          //         : null,
                                           controller: upiAmountController,
                                           decoration: const InputDecoration(
                                             hintText: "Amount",
@@ -536,6 +540,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       Checkbox(
                                         value: isCheque,
                                         onChanged: (bool? val) {
+                                          chequeAmountController.text =
+                                              finalAmountController.text;
                                           setState(() {
                                             isCheque = val!;
                                           });
@@ -549,10 +555,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                           children: [
                                             TextFormField(
                                               readOnly: !isCheque,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller: bankNameController,
                                               decoration: const InputDecoration(
                                                 hintText: "Bank Name",
@@ -563,10 +569,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                               readOnly: !isCheque,
                                               keyboardType:
                                                   TextInputType.number,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller:
                                                   chequeNumberController,
                                               decoration: const InputDecoration(
@@ -578,10 +584,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                               readOnly: !isCheque,
                                               keyboardType:
                                                   TextInputType.number,
-                                              validator: (val) =>
-                                                  (val!.isEmpty && isCheque)
-                                                      ? "Required"
-                                                      : null,
+                                              // validator: (val) =>
+                                              //     (val!.isEmpty && isCheque)
+                                              //         ? "Required"
+                                              //         : null,
                                               controller:
                                                   chequeAmountController,
                                               decoration: const InputDecoration(
