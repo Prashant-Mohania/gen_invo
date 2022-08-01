@@ -849,10 +849,14 @@ class _AddInvoiceState extends State<AddInvoice> {
                             }
                             if (_formKey.currentState!.validate() &&
                                 defaultItem.title != "") {
-                              if (!isCash && !isCheque && !isUPI) {
-                                isCash = true;
-                                cashAmountController.text =
-                                    finalAmountController.text;
+                              if (!isCash) {
+                                cashAmountController.text = "0";
+                              }
+                              if (!isCheque) {
+                                chequeAmountController.text = "0";
+                              }
+                              if (!isUPI) {
+                                upiAmountController.text = "0";
                               }
                               InvoiceModel invoice = InvoiceModel(
                                 id: widget.invoiceNo,

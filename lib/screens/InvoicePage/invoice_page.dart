@@ -118,7 +118,11 @@ class InvoicePage extends StatelessWidget {
                                                   : invoices.lst[index].isUPI ==
                                                           1
                                                       ? "By UPI"
-                                                      : "By Cheque",
+                                                      : invoices.lst[index]
+                                                                  .isCheque ==
+                                                              1
+                                                          ? "By Cheque"
+                                                          : "",
                             ),
                           ],
                         ),

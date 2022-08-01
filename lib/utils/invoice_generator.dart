@@ -549,7 +549,11 @@ class Invoice {
                                                     ? "By Cash"
                                                     : invoiceData.isUPI == 1
                                                         ? "By UPI"
-                                                        : "By Cheque",
+                                                        : invoiceData
+                                                                    .isCheque ==
+                                                                1
+                                                            ? "By Cheque"
+                                                            : "",
                                 style: pw.TextStyle(
                                   fontWeight: pw.FontWeight.bold,
                                 ),

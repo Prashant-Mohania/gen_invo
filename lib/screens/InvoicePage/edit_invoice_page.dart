@@ -763,6 +763,15 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                           text: "Generate Invoice",
                           callback: () {
                             if (_formKey.currentState!.validate()) {
+                              if (!isCash) {
+                                cashAmountController.text = "0";
+                              }
+                              if (!isCheque) {
+                                chequeAmountController.text = "0";
+                              }
+                              if (!isUPI) {
+                                upiAmountController.text = "0";
+                              }
                               InvoiceModel invoice = InvoiceModel(
                                 id: widget.invoice.id,
                                 pId: selectedParty.partyId,
