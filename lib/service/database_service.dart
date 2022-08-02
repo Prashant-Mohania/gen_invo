@@ -1,5 +1,7 @@
+import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/item_model.dart';
 import 'package:gen_invo/Models/party_model.dart';
+import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -212,6 +214,21 @@ LEFT JOIN party ON invoice.pId = party.partyId
 LEFT JOIN item ON invoice.iId = item.itemId
 WHERE pId = $partyId
 """);
+    return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
+  }
+
+  Future<List<InvoiceResultModel>> getInvoiceListOfMonth(int month) async {
+    String from = DateFormat('dd-MM-yyyy')
+        .format(DateTime(DateTime.now().year, month, 1));
+
+    String to = DateFormat('dd-MM-yyyy')
+        .format(DateTime(DateTime.now().year, month + 1, 1));
+    final db = await instance.database;
+    final res = await db.query(
+      "invoice",
+      where: "date >= ? and date <= ?",
+      whereArgs: [from, to],
+    );
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 

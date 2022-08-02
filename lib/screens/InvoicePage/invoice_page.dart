@@ -33,7 +33,7 @@ class InvoicePage extends StatelessWidget {
             ),
           ],
         ),
-        drawer: const MyDrawer(),
+        // drawer: const MyDrawer(),
         floatingActionButton: FloatingActionButton(
           child: const Icon(Icons.add),
           onPressed: () {
@@ -122,7 +122,11 @@ class InvoicePage extends StatelessWidget {
                                                                   .isCheque ==
                                                               1
                                                           ? "By Cheque"
-                                                          : "",
+                                                          : invoices.lst[index]
+                                                                      .isRTGS ==
+                                                                  1
+                                                              ? "By RTGS"
+                                                              : "",
                             ),
                           ],
                         ),
@@ -131,6 +135,16 @@ class InvoicePage extends StatelessWidget {
                           children: [
                             Text(
                                 "₹ ${_currencyFormat(invoices.lst[index].netAmount!)}"),
+                            Text(
+                              invoices.lst[index].isAdjusted == 1
+                                  ? "Adjusted"
+                                  : "Not Adjusted",
+                              style: TextStyle(
+                                color: invoices.lst[index].isAdjusted == 1
+                                    ? Colors.green
+                                    : Colors.red,
+                              ),
+                            ),
                             Text(invoices.lst[index].date!),
                           ],
                         ),

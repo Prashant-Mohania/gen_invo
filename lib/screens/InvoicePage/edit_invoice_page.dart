@@ -53,7 +53,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       isCash = false,
       isUPI = false,
       isCheque = false,
-      isRTGS = false;
+      isRTGS = false,
+      isAdjusted = false;
   String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
   ItemModel defaultItem = ItemModel(title: "");
   PartyModel selectedParty = PartyModel(state: "Uttar Pradesh");
@@ -122,6 +123,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
         hsn: widget.invoice.hsn,
       );
     });
+    isAdjusted = widget.invoice.isAdjusted == 1 ? true : false;
 
     date = widget.invoice.date!;
 
@@ -296,12 +298,33 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                       ),
                       const SizedBox(height: 10),
                       const Divider(),
-                      const Text(
-                        "Invoice Details",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Invoice Details",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          const Text(
+                            "Is Adjusted",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Switch(
+                            value: isAdjusted,
+                            inactiveThumbColor: Colors.red,
+                            activeColor: Colors.green,
+                            onChanged: (val) {
+                              widget.invoice.isAdjusted = val ? 1 : 0;
+                              setState(() {
+                                isAdjusted = val;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       Row(
@@ -814,6 +837,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                     : rtgs == RTGS.pending
                                         ? "Pending"
                                         : "",
+                                isAdjusted: isAdjusted == true ? 1 : 0,
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)

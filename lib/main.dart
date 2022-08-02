@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gen_invo/screens/HomePage/home_page.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:provider/provider.dart';
 
@@ -58,7 +59,7 @@ class _MyAppState extends State<MyApp> {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: isSetup ? const InvoicePage() : const SetupPage(),
+        home: isSetup ? const HomePage() : const SetupPage(),
       ),
     );
   }

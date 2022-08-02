@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:gen_invo/screens/HomePage/home_page.dart';
 import 'package:gen_invo/screens/SetupPage/second_page.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/utils/save_file.dart';
@@ -54,7 +55,7 @@ class SetupPartiesPage extends StatelessWidget {
                 callback: () {
                   LocalDatabase.setSetup("setup", true);
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (_) => const InvoicePage()));
+                      MaterialPageRoute(builder: (_) => const HomePage()));
                 },
                 text: "Skip",
               ),
