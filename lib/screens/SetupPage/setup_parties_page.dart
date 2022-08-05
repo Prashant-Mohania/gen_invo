@@ -9,7 +9,6 @@ import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/utils/save_file.dart';
 
 import '../../widgets/custom_button.dart';
-import '../InvoicePage/invoice_page.dart';
 
 class SetupPartiesPage extends StatelessWidget {
   const SetupPartiesPage({Key? key}) : super(key: key);

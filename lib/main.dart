@@ -7,7 +7,6 @@ import 'package:provider/provider.dart';
 import 'Models/invoice_change_notifier.dart';
 import 'Models/item_change_notifier.dart';
 import 'Models/party_change_notifier.dart';
-import 'screens/InvoicePage/invoice_page.dart';
 import 'screens/SetupPage/setup_page.dart';
 
 void main() async {

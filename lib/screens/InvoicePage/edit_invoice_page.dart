@@ -102,33 +102,28 @@ class _AddInvoiceState extends State<EditInvoicePage> {
         .fetchItemList()
         .then((value) {
       itemList = Provider.of<ItemChangeNotifier>(context, listen: false).lst;
-
-      // defaultItem = ItemModel(
-      //   title: widget.invoice.title,
-      //   hsn: widget.invoice.hsn,
-      // );
-      selectedParty = PartyModel(
-        partyId: widget.invoice.partyId,
-        name: widget.invoice.name,
-        city: widget.invoice.city,
-        state: widget.invoice.state,
-        gst: widget.invoice.gst,
-        mobile: widget.invoice.mobile,
-        email: widget.invoice.email,
-        address: widget.invoice.address,
-      );
-      defaultItem = ItemModel(
-        itemId: widget.invoice.iId,
-        title: widget.invoice.title.toString(),
-        hsn: widget.invoice.hsn,
-      );
     });
+    selectedParty = PartyModel(
+      partyId: widget.invoice.partyId,
+      name: widget.invoice.name,
+      city: widget.invoice.city,
+      state: widget.invoice.state,
+      gst: widget.invoice.gst,
+      mobile: widget.invoice.mobile,
+      email: widget.invoice.email,
+      address: widget.invoice.address,
+    );
+    defaultItem = ItemModel(
+      itemId: widget.invoice.iId,
+      title: widget.invoice.title.toString(),
+      hsn: widget.invoice.hsn,
+    );
     isAdjusted = widget.invoice.isAdjusted == 1 ? true : false;
 
     date = widget.invoice.date!;
 
     // setting item values
-    final item = Provider.of<ItemChangeNotifier>(context, listen: false);
+    item = Provider.of<ItemChangeNotifier>(context, listen: false);
     item.subTotal = widget.invoice.totalCost!;
     item.taxAmnt = widget.invoice.cgst!;
     item.igstAmnt = widget.invoice.igst!;
@@ -180,6 +175,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
 
   @override
   void dispose() {
+    item.close();
     dateController.dispose();
     invoiceNoController.dispose();
     partyNameController.dispose();
@@ -843,6 +839,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       listen: false)
                                   .update(invoice)
                                   .then((value) {
+                                item.close();
                                 Navigator.pop(context);
                                 Navigator.push(
                                     context,

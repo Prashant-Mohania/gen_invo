@@ -1,7 +1,5 @@
-import 'package:flutter/material.dart';
 import 'package:gen_invo/Models/item_model.dart';
 import 'package:gen_invo/Models/party_model.dart';
-import 'package:intl/intl.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
 
@@ -218,18 +216,23 @@ WHERE pId = $partyId
   }
 
   Future<List<InvoiceResultModel>> getInvoiceListOfMonth(int month) async {
-    String from = DateFormat('dd-MM-yyyy')
-        .format(DateTime(DateTime.now().year, month, 1));
-
-    String to = DateFormat('dd-MM-yyyy')
-        .format(DateTime(DateTime.now().year, month + 1, 1));
     final db = await instance.database;
     final res = await db.query(
       "invoice",
-      where: "date >= ? and date <= ?",
-      whereArgs: [from, to],
+      // where: "date > ? and date < ?",
+      // whereArgs: [from, to],
     );
-    return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
+
+    List<Map<String, dynamic>> lst = [];
+    for (var element in res) {
+      final date = DateTime.parse(
+          "${element['date'].toString().split("-")[2]}-${element['date'].toString().split("-")[1]}-${element['date'].toString().split("-")[0]}");
+      if (date.isAfter(DateTime(DateTime.now().year, month - 1, 31)) &&
+          date.isBefore(DateTime(DateTime.now().year, month + 1, 1))) {
+        lst.add(element);
+      }
+    }
+    return lst.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 
   // ------------------------------------------- Company CRUD --------------------------------

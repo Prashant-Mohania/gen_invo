@@ -4,7 +4,6 @@ import 'package:gen_invo/Models/item_change_notifier.dart';
 import 'package:gen_invo/screens/InvoicePage/add_invoice_page.dart';
 import 'package:gen_invo/screens/InvoicePage/edit_invoice_page.dart';
 import 'package:gen_invo/service/local_database.dart';
-import 'package:gen_invo/widgets/my_drawer.dart';
 import 'package:gen_invo/widgets/invoice_search.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
