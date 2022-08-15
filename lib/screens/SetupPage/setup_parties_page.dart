@@ -3,12 +3,12 @@ import 'dart:io';
 import 'package:excel/excel.dart';
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:gen_invo/screens/HomePage/home_page.dart';
 import 'package:gen_invo/screens/SetupPage/second_page.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/utils/save_file.dart';
 
 import '../../widgets/custom_button.dart';
-import '../InvoicePage/invoice_page.dart';
 
 class SetupPartiesPage extends StatelessWidget {
   const SetupPartiesPage({Key? key}) : super(key: key);
@@ -54,7 +54,7 @@ class SetupPartiesPage extends StatelessWidget {
                 callback: () {
                   LocalDatabase.setSetup("setup", true);
                   Navigator.pushReplacement(context,
-                      MaterialPageRoute(builder: (_) => const InvoicePage()));
+                      MaterialPageRoute(builder: (_) => const HomePage()));
                 },
                 text: "Skip",
               ),

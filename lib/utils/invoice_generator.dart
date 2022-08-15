@@ -553,7 +553,11 @@ class Invoice {
                                                                     .isCheque ==
                                                                 1
                                                             ? "By Cheque"
-                                                            : "",
+                                                            : invoiceData
+                                                                        .isRTGS ==
+                                                                    1
+                                                                ? "By RTGS"
+                                                                : "",
                                 style: pw.TextStyle(
                                   fontWeight: pw.FontWeight.bold,
                                 ),

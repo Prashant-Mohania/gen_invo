@@ -215,6 +215,26 @@ WHERE pId = $partyId
     return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 
+  Future<List<InvoiceResultModel>> getInvoiceListOfMonth(int month) async {
+    final db = await instance.database;
+    final res = await db.query(
+      "invoice",
+      // where: "date > ? and date < ?",
+      // whereArgs: [from, to],
+    );
+
+    List<Map<String, dynamic>> lst = [];
+    for (var element in res) {
+      final date = DateTime.parse(
+          "${element['date'].toString().split("-")[2]}-${element['date'].toString().split("-")[1]}-${element['date'].toString().split("-")[0]}");
+      if (date.isAfter(DateTime(DateTime.now().year, month - 1, 31)) &&
+          date.isBefore(DateTime(DateTime.now().year, month + 1, 1))) {
+        lst.add(element);
+      }
+    }
+    return lst.map((e) => InvoiceResultModel.fromJson(e)).toList();
+  }
+
   // ------------------------------------------- Company CRUD --------------------------------
 
   getCompanyDetails() async {

@@ -120,6 +120,7 @@ class _AddInvoiceState extends State<AddInvoice> {
 
   @override
   void dispose() {
+    item.close();
     // dateController.dispose();
     // invoiceNoController.dispose();
     partyNameController.dispose();
@@ -913,8 +914,6 @@ class _AddInvoiceState extends State<AddInvoice> {
                                               invoiceId: invoice.id!,
                                             )));
                               });
-
-                              item.close();
                             } else {
                               ScaffoldMessenger.of(context)
                                   .showSnackBar(const SnackBar(

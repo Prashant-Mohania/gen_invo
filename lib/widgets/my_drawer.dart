@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gen_invo/screens/InvoicePage/invoice_page.dart';
 
 import '../screens/ItemPage/item_page.dart';
 import '../screens/PartiesPage/parties_page.dart';
@@ -44,16 +45,16 @@ class MyDrawer extends StatelessWidget {
               // Navigator.pop(context);
             },
           ),
-          // ListTile(
-          //   title: const Text("Company Details"),
-          //   leading: const Icon(Icons.add),
-          //   onTap: () {
-          //     Navigator.pop(context);
-          //     Navigator.push(context,
-          //         MaterialPageRoute(builder: (_) => const CompanyPage()));
-          //     // Navigator.pop(context);
-          //   },
-          // ),
+          ListTile(
+            title: const Text("Manage Invoices"),
+            leading: const Icon(Icons.add),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const InvoicePage()));
+              // Navigator.pop(context);
+            },
+          ),
         ],
       ),
     );

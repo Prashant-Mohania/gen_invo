@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:gen_invo/screens/HomePage/home_page.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:provider/provider.dart';
 
 import 'Models/invoice_change_notifier.dart';
 import 'Models/item_change_notifier.dart';
 import 'Models/party_change_notifier.dart';
-import 'screens/InvoicePage/invoice_page.dart';
 import 'screens/SetupPage/setup_page.dart';
 
 void main() async {
@@ -58,7 +58,7 @@ class _MyAppState extends State<MyApp> {
           primarySwatch: Colors.blue,
           visualDensity: VisualDensity.adaptivePlatformDensity,
         ),
-        home: isSetup ? const InvoicePage() : const SetupPage(),
+        home: isSetup ? const HomePage() : const SetupPage(),
       ),
     );
   }

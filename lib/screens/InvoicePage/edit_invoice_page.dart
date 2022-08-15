@@ -53,7 +53,8 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       isCash = false,
       isUPI = false,
       isCheque = false,
-      isRTGS = false;
+      isRTGS = false,
+      isAdjusted = false;
   String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
   ItemModel defaultItem = ItemModel(title: "");
   PartyModel selectedParty = PartyModel(state: "Uttar Pradesh");
@@ -101,32 +102,28 @@ class _AddInvoiceState extends State<EditInvoicePage> {
         .fetchItemList()
         .then((value) {
       itemList = Provider.of<ItemChangeNotifier>(context, listen: false).lst;
-
-      // defaultItem = ItemModel(
-      //   title: widget.invoice.title,
-      //   hsn: widget.invoice.hsn,
-      // );
-      selectedParty = PartyModel(
-        partyId: widget.invoice.partyId,
-        name: widget.invoice.name,
-        city: widget.invoice.city,
-        state: widget.invoice.state,
-        gst: widget.invoice.gst,
-        mobile: widget.invoice.mobile,
-        email: widget.invoice.email,
-        address: widget.invoice.address,
-      );
-      defaultItem = ItemModel(
-        itemId: widget.invoice.iId,
-        title: widget.invoice.title.toString(),
-        hsn: widget.invoice.hsn,
-      );
     });
+    selectedParty = PartyModel(
+      partyId: widget.invoice.partyId,
+      name: widget.invoice.name,
+      city: widget.invoice.city,
+      state: widget.invoice.state,
+      gst: widget.invoice.gst,
+      mobile: widget.invoice.mobile,
+      email: widget.invoice.email,
+      address: widget.invoice.address,
+    );
+    defaultItem = ItemModel(
+      itemId: widget.invoice.iId,
+      title: widget.invoice.title.toString(),
+      hsn: widget.invoice.hsn,
+    );
+    isAdjusted = widget.invoice.isAdjusted == 1 ? true : false;
 
     date = widget.invoice.date!;
 
     // setting item values
-    final item = Provider.of<ItemChangeNotifier>(context, listen: false);
+    item = Provider.of<ItemChangeNotifier>(context, listen: false);
     item.subTotal = widget.invoice.totalCost!;
     item.taxAmnt = widget.invoice.cgst!;
     item.igstAmnt = widget.invoice.igst!;
@@ -178,6 +175,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
 
   @override
   void dispose() {
+    item.close();
     dateController.dispose();
     invoiceNoController.dispose();
     partyNameController.dispose();
@@ -296,12 +294,33 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                       ),
                       const SizedBox(height: 10),
                       const Divider(),
-                      const Text(
-                        "Invoice Details",
-                        style: TextStyle(
-                          fontSize: 20,
-                          fontWeight: FontWeight.bold,
-                        ),
+                      Row(
+                        // mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          const Text(
+                            "Invoice Details",
+                            style: TextStyle(
+                              fontSize: 20,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          ),
+                          const Spacer(),
+                          const Text(
+                            "Is Adjusted",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          Switch(
+                            value: isAdjusted,
+                            inactiveThumbColor: Colors.red,
+                            activeColor: Colors.green,
+                            onChanged: (val) {
+                              widget.invoice.isAdjusted = val ? 1 : 0;
+                              setState(() {
+                                isAdjusted = val;
+                              });
+                            },
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 10),
                       Row(
@@ -814,11 +833,13 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                     : rtgs == RTGS.pending
                                         ? "Pending"
                                         : "",
+                                isAdjusted: isAdjusted == true ? 1 : 0,
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)
                                   .update(invoice)
                                   .then((value) {
+                                item.close();
                                 Navigator.pop(context);
                                 Navigator.push(
                                     context,
