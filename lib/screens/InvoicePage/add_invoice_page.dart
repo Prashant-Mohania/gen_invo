@@ -59,7 +59,9 @@ class _AddInvoiceState extends State<AddInvoice> {
       isCash = false,
       isUPI = false,
       isCheque = false,
-      isRTGS = false;
+      isRTGS = false,
+      isBalance = false,
+      isAdjusted = false;
   ItemModel defaultItem = ItemModel(title: "");
   PartyModel selectedParty = PartyModel(state: "Uttar Pradesh");
   late List<ItemModel> itemList;
@@ -205,6 +207,25 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       : PartyType.nonRegular;
                                 });
                               }),
+                        ],
+                      ),
+                      Row(
+                        children: [
+                          const Text(
+                            "Is Adjusted",
+                            style: TextStyle(fontSize: 16),
+                          ),
+                          const Spacer(),
+                          Switch(
+                            value: isAdjusted,
+                            inactiveThumbColor: Colors.red,
+                            activeColor: Colors.green,
+                            onChanged: (val) {
+                              setState(() {
+                                isAdjusted = val;
+                              });
+                            },
+                          ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -709,6 +730,20 @@ class _AddInvoiceState extends State<AddInvoice> {
                                           ],
                                         )
                                       : const SizedBox(),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isBalance,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isBalance = val!;
+                                          });
+                                        },
+                                      ),
+                                      const Text("Balance")
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -849,7 +884,12 @@ class _AddInvoiceState extends State<AddInvoice> {
                               }
                             }
                             if (_formKey.currentState!.validate() &&
-                                defaultItem.title != "") {
+                                defaultItem.title != "" &&
+                                (isCash ||
+                                    isRTGS ||
+                                    isCheque ||
+                                    isUPI ||
+                                    isBalance)) {
                               if (!isCash) {
                                 cashAmountController.text = "0";
                               }
@@ -901,6 +941,7 @@ class _AddInvoiceState extends State<AddInvoice> {
                                     : rtgs == RTGS.pending
                                         ? "Pending"
                                         : "",
+                                isAdjusted: isAdjusted == true ? 1 : 0,
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)
@@ -908,21 +949,24 @@ class _AddInvoiceState extends State<AddInvoice> {
                                   .then((value) {
                                 Navigator.pop(context);
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => InvoiceView(
-                                              invoiceId: invoice.id!,
-                                            )));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => InvoiceView(
+                                      invoiceId: invoice.id!,
+                                    ),
+                                  ),
+                                );
                               });
                             } else {
-                              ScaffoldMessenger.of(context)
-                                  .showSnackBar(const SnackBar(
-                                content: Text(
-                                    "Please fill all the fields and select an item"),
-                                duration: Duration(seconds: 2),
-                                behavior: SnackBarBehavior.floating,
-                                margin: EdgeInsets.all(20),
-                              ));
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "Please fill all the fields and select an item"),
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(20),
+                                ),
+                              );
                             }
                           })
                     ],

@@ -54,6 +54,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       isUPI = false,
       isCheque = false,
       isRTGS = false,
+      isBalance = false,
       isAdjusted = false;
   String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
   ItemModel defaultItem = ItemModel(title: "");
@@ -170,6 +171,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     chequeNumberController.text = widget.invoice.chequeNumber.toString();
     dateController.text = widget.invoice.date!;
     invoiceNoController.text = widget.invoice.id!.toString();
+    if (!isCash && !isUPI && !isCheque && !isRTGS) {
+      isBalance = true;
+    }
     super.initState();
   }
 
@@ -662,6 +666,20 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                           ],
                                         )
                                       : const SizedBox(),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isBalance,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isBalance = val!;
+                                          });
+                                        },
+                                      ),
+                                      const Text("Balance")
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -781,7 +799,12 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                       CustomButton(
                           text: "Generate Invoice",
                           callback: () {
-                            if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate() &&
+                                (isCash ||
+                                    isRTGS ||
+                                    isCheque ||
+                                    isUPI ||
+                                    isBalance)) {
                               if (!isCash) {
                                 cashAmountController.text = "0";
                               }
@@ -842,12 +865,24 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                 item.close();
                                 Navigator.pop(context);
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => InvoiceView(
-                                              invoiceId: invoice.id!,
-                                            )));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => InvoiceView(
+                                      invoiceId: invoice.id!,
+                                    ),
+                                  ),
+                                );
                               });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "Please fill all the fields and select an item"),
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(20),
+                                ),
+                              );
                             }
                           })
                     ],
