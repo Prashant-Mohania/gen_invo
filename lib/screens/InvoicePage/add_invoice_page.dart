@@ -21,6 +21,8 @@ enum PartyType { regular, nonRegular }
 
 enum RTGS { completed, pending, notRequired }
 
+enum IsAdjusted { adjusted, notAdjusted, unSelected }
+
 class AddInvoice extends StatefulWidget {
   final int invoiceNo;
   const AddInvoice({Key? key, required this.invoiceNo}) : super(key: key);
@@ -67,6 +69,8 @@ class _AddInvoiceState extends State<AddInvoice> {
   late List<ItemModel> itemList;
   PartyType partyType = PartyType.regular;
   RTGS rtgs = RTGS.notRequired;
+
+  IsAdjusted isAdj = IsAdjusted.unSelected;
 
   late ItemChangeNotifier item;
 
@@ -212,20 +216,43 @@ class _AddInvoiceState extends State<AddInvoice> {
                       Row(
                         children: [
                           const Text(
-                            "Is Adjusted",
+                            "Adjusted ?",
                             style: TextStyle(fontSize: 16),
                           ),
                           const Spacer(),
-                          Switch(
-                            value: isAdjusted,
-                            inactiveThumbColor: Colors.red,
-                            activeColor: Colors.green,
-                            onChanged: (val) {
-                              setState(() {
-                                isAdjusted = val;
-                              });
-                            },
-                          ),
+
+                          Radio<IsAdjusted>(
+                              value: IsAdjusted.notAdjusted,
+                              groupValue: isAdj,
+                              onChanged: (val) {
+                                setState(() {
+                                  isAdj = val!;
+                                  isAdjusted = false;
+                                });
+                              }),
+                          const Text("Not Adjusted"),
+                          const Spacer(),
+                          Radio<IsAdjusted>(
+                              value: IsAdjusted.adjusted,
+                              groupValue: isAdj,
+                              onChanged: (val) {
+                                setState(() {
+                                  isAdj = val!;
+                                  isAdjusted = true;
+                                });
+                              }),
+                          const Text("Adjusted"),
+                          // const Spacer(),
+                          // Switch(
+                          //   value: isAdjusted,
+                          //   inactiveThumbColor: Colors.red,
+                          //   activeColor: Colors.green,
+                          //   onChanged: (val) {
+                          //     setState(() {
+                          //       isAdjusted = val;
+                          //     });
+                          //   },
+                          // ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -889,7 +916,8 @@ class _AddInvoiceState extends State<AddInvoice> {
                                     isRTGS ||
                                     isCheque ||
                                     isUPI ||
-                                    isBalance)) {
+                                    isBalance) &&
+                                isAdj != IsAdjusted.unSelected) {
                               if (!isCash) {
                                 cashAmountController.text = "0";
                               }
