@@ -15,6 +15,8 @@ import '../../widgets/my_search_delegate.dart';
 
 enum RTGS { completed, pending, notRequired }
 
+enum IsAdjusted { adjusted, notAdjusted, unSelected }
+
 class EditInvoicePage extends StatefulWidget {
   final InvoiceResultModel invoice;
   const EditInvoicePage({Key? key, required this.invoice}) : super(key: key);
@@ -54,12 +56,15 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       isUPI = false,
       isCheque = false,
       isRTGS = false,
+      isBalance = false,
       isAdjusted = false;
   String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
   ItemModel defaultItem = ItemModel(title: "");
   PartyModel selectedParty = PartyModel(state: "Uttar Pradesh");
   late List<ItemModel> itemList;
   RTGS rtgs = RTGS.notRequired;
+
+  IsAdjusted isAdj = IsAdjusted.unSelected;
 
   late ItemChangeNotifier item;
 
@@ -119,6 +124,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       hsn: widget.invoice.hsn,
     );
     isAdjusted = widget.invoice.isAdjusted == 1 ? true : false;
+    isAdj = isAdjusted ? IsAdjusted.adjusted : IsAdjusted.notAdjusted;
 
     date = widget.invoice.date!;
 
@@ -170,6 +176,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     chequeNumberController.text = widget.invoice.chequeNumber.toString();
     dateController.text = widget.invoice.date!;
     invoiceNoController.text = widget.invoice.id!.toString();
+    if (!isCash && !isUPI && !isCheque && !isRTGS) {
+      isBalance = true;
+    }
     super.initState();
   }
 
@@ -294,32 +303,54 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                       ),
                       const SizedBox(height: 10),
                       const Divider(),
+                      const Text(
+                        "Invoice Details",
+                        style: TextStyle(
+                          fontSize: 20,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
                       Row(
                         // mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           const Text(
-                            "Invoice Details",
-                            style: TextStyle(
-                              fontSize: 20,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          const Spacer(),
-                          const Text(
-                            "Is Adjusted",
+                            "Adjusted ?",
                             style: TextStyle(fontSize: 16),
                           ),
-                          Switch(
-                            value: isAdjusted,
-                            inactiveThumbColor: Colors.red,
-                            activeColor: Colors.green,
-                            onChanged: (val) {
-                              widget.invoice.isAdjusted = val ? 1 : 0;
-                              setState(() {
-                                isAdjusted = val;
-                              });
-                            },
-                          ),
+                          const Spacer(),
+
+                          Radio<IsAdjusted>(
+                              value: IsAdjusted.notAdjusted,
+                              groupValue: isAdj,
+                              onChanged: (val) {
+                                setState(() {
+                                  isAdj = val!;
+                                  isAdjusted = false;
+                                });
+                              }),
+                          const Text("Not Adjusted"),
+                          const Spacer(),
+                          Radio<IsAdjusted>(
+                              value: IsAdjusted.adjusted,
+                              groupValue: isAdj,
+                              onChanged: (val) {
+                                setState(() {
+                                  isAdj = val!;
+                                  isAdjusted = true;
+                                });
+                              }),
+                          const Text("Adjusted"),
+                          // Switch(
+                          //   value: isAdjusted,
+                          //   inactiveThumbColor: Colors.red,
+                          //   activeColor: Colors.green,
+                          //   onChanged: (val) {
+                          //     widget.invoice.isAdjusted = val ? 1 : 0;
+                          //     setState(() {
+                          //       isAdjusted = val;
+                          //     });
+                          //   },
+                          // ),
                         ],
                       ),
                       const SizedBox(height: 10),
@@ -662,6 +693,20 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                           ],
                                         )
                                       : const SizedBox(),
+                                  const SizedBox(height: 20),
+                                  Row(
+                                    children: [
+                                      Checkbox(
+                                        value: isBalance,
+                                        onChanged: (bool? val) {
+                                          setState(() {
+                                            isBalance = val!;
+                                          });
+                                        },
+                                      ),
+                                      const Text("Balance")
+                                    ],
+                                  ),
                                 ],
                               ),
                             ),
@@ -781,7 +826,13 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                       CustomButton(
                           text: "Generate Invoice",
                           callback: () {
-                            if (_formKey.currentState!.validate()) {
+                            if (_formKey.currentState!.validate() &&
+                                (isCash ||
+                                    isRTGS ||
+                                    isCheque ||
+                                    isUPI ||
+                                    isBalance) &&
+                                isAdj != IsAdjusted.unSelected) {
                               if (!isCash) {
                                 cashAmountController.text = "0";
                               }
@@ -842,12 +893,24 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                 item.close();
                                 Navigator.pop(context);
                                 Navigator.push(
-                                    context,
-                                    MaterialPageRoute(
-                                        builder: (_) => InvoiceView(
-                                              invoiceId: invoice.id!,
-                                            )));
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (_) => InvoiceView(
+                                      invoiceId: invoice.id!,
+                                    ),
+                                  ),
+                                );
                               });
+                            } else {
+                              ScaffoldMessenger.of(context).showSnackBar(
+                                const SnackBar(
+                                  content: Text(
+                                      "Please fill all the fields and select an item"),
+                                  duration: Duration(seconds: 2),
+                                  behavior: SnackBarBehavior.floating,
+                                  margin: EdgeInsets.all(20),
+                                ),
+                              );
                             }
                           })
                     ],

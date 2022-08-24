@@ -217,11 +217,12 @@ WHERE pId = $partyId
 
   Future<List<InvoiceResultModel>> getInvoiceListOfMonth(int month) async {
     final db = await instance.database;
-    final res = await db.query(
-      "invoice",
-      // where: "date > ? and date < ?",
-      // whereArgs: [from, to],
-    );
+    final res = await db.rawQuery("""
+SELECT * FROM invoice
+LEFT JOIN party ON invoice.pId = party.partyId
+LEFT JOIN item ON invoice.iId = item.itemId
+ORDER BY invoice.id DESC
+""");
 
     List<Map<String, dynamic>> lst = [];
     for (var element in res) {
