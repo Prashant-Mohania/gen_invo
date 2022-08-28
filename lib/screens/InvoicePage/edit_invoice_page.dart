@@ -49,6 +49,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
   TextEditingController nameController = TextEditingController();
   TextEditingController cityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
+  TextEditingController etaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
 
   bool isLoad = false,
@@ -179,6 +180,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     if (!isCash && !isUPI && !isCheque && !isRTGS) {
       isBalance = true;
     }
+    etaController.text = widget.invoice.eta.toString();
     super.initState();
   }
 
@@ -204,6 +206,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     upiAmountController.dispose();
     chequeAmountController.dispose();
     chequeNumberController.dispose();
+    etaController.dispose();
     selectedParty = selectedParty;
     defaultItem = defaultItem;
     super.dispose();
@@ -653,6 +656,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       Checkbox(
                                         value: isRTGS,
                                         onChanged: (bool? val) {
+                                          if (val == false) {
+                                            rtgs = RTGS.notRequired;
+                                          }
                                           setState(() {
                                             isRTGS = val!;
                                           });
@@ -707,6 +713,35 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       const Text("Balance")
                                     ],
                                   ),
+                                  const SizedBox(height: 20),
+                                  (isBalance || rtgs == RTGS.pending) &&
+                                          isAdj == IsAdjusted.adjusted
+                                      ? TextFormField(
+                                          readOnly: true,
+                                          keyboardType: TextInputType.number,
+                                          onTap: () async {
+                                            DateTime res = await showDatePicker(
+                                                  context: context,
+                                                  initialDate: DateTime.now(),
+                                                  firstDate: DateTime.now(),
+                                                  lastDate: DateTime(2100),
+                                                ) ??
+                                                DateTime.now();
+                                            etaController.text =
+                                                res.toString().split(" ")[0];
+                                            setState(() {});
+                                          },
+                                          validator: (val) {
+                                            return (val!.isEmpty)
+                                                ? "Required"
+                                                : null;
+                                          },
+                                          controller: etaController,
+                                          decoration: const InputDecoration(
+                                            hintText: "Date",
+                                          ),
+                                        )
+                                      : const SizedBox(),
                                 ],
                               ),
                             ),
@@ -885,6 +920,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                         ? "Pending"
                                         : "",
                                 isAdjusted: isAdjusted == true ? 1 : 0,
+                                eta: (isBalance || rtgs == RTGS.pending) &&
+                                        isAdj == IsAdjusted.adjusted
+                                    ? etaController.text
+                                    : "",
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)

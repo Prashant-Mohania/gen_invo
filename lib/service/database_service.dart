@@ -24,7 +24,14 @@ class DatabaseService {
     final dbPath = await getDatabasesPath();
     final path = join(dbPath, filePath);
 
-    return await openDatabase(path, version: 1, onCreate: _createDB);
+    return await openDatabase(
+      path,
+      version: 2,
+      onCreate: _createDB,
+      onUpgrade: (db, oldVersion, newVersion) {
+        db.execute('ALTER TABLE Invoice ADD COLUMN eta TEXT');
+      },
+    );
   }
 
   Future _createDB(Database db, int version) async {
@@ -77,7 +84,8 @@ CREATE TABLE invoice (
   rtgsState TEXT NOT NULL,
   netAmount INTEGER NOT NULL,
   netBalance INTEGER NOT NULL,
-  isAdjusted INTEGER NOT NULL
+  isAdjusted INTEGER NOT NULL,
+  eta TEXT
   )
 ''');
 
@@ -234,6 +242,23 @@ ORDER BY invoice.id DESC
       }
     }
     return lst.map((e) => InvoiceResultModel.fromJson(e)).toList();
+  }
+
+  Future<List<InvoiceResultModel>> getTodayOutstandingInvoices() async {
+    final db = await instance.database;
+    final res = await db.rawQuery("""
+SELECT * FROM invoice
+LEFT JOIN party ON invoice.pId = party.partyId
+LEFT JOIN item ON invoice.iId = item.itemId
+WHERE eta <= '${DateTime.now().toString().split(" ")[0]}'
+""");
+    return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
+  }
+
+  Future<void> updateETA(InvoiceResultModel invoice) async {
+    final db = await instance.database;
+    await db.update("invoice", {"eta": invoice.eta},
+        where: "id = ?", whereArgs: [invoice.id]);
   }
 
   // ------------------------------------------- Company CRUD --------------------------------
