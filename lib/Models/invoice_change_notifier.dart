@@ -17,6 +17,8 @@ class InvoiceChangeNotifier extends ChangeNotifier {
   List<InvoiceResultModel> cashInvoices = <InvoiceResultModel>[];
   List<InvoiceResultModel> invoices = <InvoiceResultModel>[];
 
+  List<InvoiceResultModel> todayOutstandingInvoices = <InvoiceResultModel>[];
+
   Future fetchInvoiceList() async {
     await dbClient.getInvoiceList().then((value) {
       lst = value;
@@ -65,6 +67,7 @@ class InvoiceChangeNotifier extends ChangeNotifier {
   }
 
   getInvoiceListOfMonth(int month) async {
+    todayOutstandingInvoices.clear();
     bankInvoices = [];
     cashInvoices = [];
     invoices = [];
@@ -72,19 +75,37 @@ class InvoiceChangeNotifier extends ChangeNotifier {
     final res = await dbClient.getInvoiceListOfMonth(month);
     invoices = res;
     for (var ele in res) {
+      if (ele.eta!.isNotEmpty &&
+          DateTime.now().isAfter(DateTime.parse(ele.eta!))) {
+        todayOutstandingInvoices.add(ele);
+      }
       if (ele.isCash != 1) {
-        // amtBank = (bank + ele.netAmount!).toString();
+        amtBank = (bank + ele.netAmount!).toString();
         bank += ele.netAmount!;
         bankInvoices.add(ele);
       } else {
-        // amtCash = (cash + ele.netAmount!).toString();
+        amtCash = (cash + ele.netAmount!).toString();
         cash += ele.netAmount!;
         cashInvoices.add(ele);
       }
     }
-    amtBank = bank.toString();
-    amtCash = cash.toString();
-    amt = (bank + cash).toString();
-    // return res;
+    // amtBank = bank.toString();
+    // amtCash = cash.toString();
+    // amt = (bank + cash).toString();
+    // final res1 = await dbClient.getTodayOutstandingInvoices();
+    // todayOutstandingInvoices = res1;
+    // // return res;
+  }
+
+  getTodayOutstandingInvoices() async {
+    final res = await dbClient.getTodayOutstandingInvoices();
+    todayOutstandingInvoices = res;
+    // notifyListeners();
+  }
+
+  removeETA(InvoiceResultModel invoice) async {
+    await dbClient.updateETA(invoice).then((value) {
+      fetchInvoiceList();
+    });
   }
 }

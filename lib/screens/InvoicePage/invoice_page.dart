@@ -76,9 +76,11 @@ class InvoicePage extends StatelessWidget {
                   itemBuilder: (context, index) {
                     return Card(
                       child: ListTile(
-                        tileColor: invoices.lst[index].id!.isEven
-                            ? Colors.white
-                            : Colors.grey[200],
+                        tileColor: invoices.lst[index].eta!.isEmpty
+                            ? invoices.lst[index].id!.isEven
+                                ? Colors.white
+                                : Colors.grey[200]
+                            : Colors.grey,
                         onTap: () {
                           Provider.of<ItemChangeNotifier>(context,
                                   listen: false)

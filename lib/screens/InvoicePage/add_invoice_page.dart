@@ -55,6 +55,7 @@ class _AddInvoiceState extends State<AddInvoice> {
   TextEditingController nameController = TextEditingController();
   TextEditingController cityController = TextEditingController();
   TextEditingController stateController = TextEditingController();
+  TextEditingController etaController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
   String date = DateFormat('dd-MM-yyyy').format(DateTime.now());
   bool isLoad = false,
@@ -144,6 +145,7 @@ class _AddInvoiceState extends State<AddInvoice> {
     totalCostController.dispose();
     cashAmountController.dispose();
     upiAmountController.dispose();
+    etaController.dispose();
     selectedParty = selectedParty;
     defaultItem = defaultItem;
     super.dispose();
@@ -717,6 +719,9 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       Checkbox(
                                         value: isRTGS,
                                         onChanged: (bool? val) {
+                                          if (val == false) {
+                                            rtgs = RTGS.notRequired;
+                                          }
                                           setState(() {
                                             isRTGS = val!;
                                           });
@@ -771,6 +776,35 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       const Text("Balance")
                                     ],
                                   ),
+                                  const SizedBox(height: 20),
+                                  (isBalance || rtgs == RTGS.pending) &&
+                                          isAdj == IsAdjusted.adjusted
+                                      ? TextFormField(
+                                          readOnly: true,
+                                          keyboardType: TextInputType.number,
+                                          onTap: () async {
+                                            DateTime res = await showDatePicker(
+                                                  context: context,
+                                                  initialDate: DateTime.now(),
+                                                  firstDate: DateTime.now(),
+                                                  lastDate: DateTime(2100),
+                                                ) ??
+                                                DateTime.now();
+                                            etaController.text =
+                                                res.toString().split(" ")[0];
+                                            setState(() {});
+                                          },
+                                          validator: (val) {
+                                            return (val!.isEmpty)
+                                                ? "Required"
+                                                : null;
+                                          },
+                                          controller: etaController,
+                                          decoration: const InputDecoration(
+                                            hintText: "Date",
+                                          ),
+                                        )
+                                      : const SizedBox(),
                                 ],
                               ),
                             ),
@@ -970,6 +1004,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                         ? "Pending"
                                         : "",
                                 isAdjusted: isAdjusted == true ? 1 : 0,
+                                eta: (isBalance || rtgs == RTGS.pending) &&
+                                        isAdj == IsAdjusted.adjusted
+                                    ? etaController.text
+                                    : "",
                               );
                               Provider.of<InvoiceChangeNotifier>(context,
                                       listen: false)

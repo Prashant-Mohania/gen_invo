@@ -21,7 +21,7 @@ class InvoiceModel {
       sgst,
       igst,
       totalAmountWithoutRounding;
-  String? date, chequeNumber, bankName, rtgsState;
+  String? date, chequeNumber, bankName, rtgsState, eta;
 
   InvoiceModel({
     this.id,
@@ -50,6 +50,7 @@ class InvoiceModel {
     this.date,
     this.netBalance,
     this.isAdjusted = 0,
+    this.eta = "",
   });
 
   factory InvoiceModel.fromJson(Map<String, dynamic> json) => InvoiceModel(
@@ -78,6 +79,7 @@ class InvoiceModel {
         date: json["date"],
         netBalance: json["netBalance"],
         isAdjusted: json["isAdjusted"],
+        eta: json["eta"],
       );
 
   Map<String, dynamic> toJson() {
@@ -108,6 +110,7 @@ class InvoiceModel {
     data["date"] = date;
     data['netBalance'] = netAmount! - receivedInCash!;
     data['isAdjusted'] = isAdjusted;
+    data['eta'] = eta;
     return data;
   }
 
@@ -138,6 +141,7 @@ class InvoiceModel {
     double? totalAmountWithoutRounding,
     String? date,
     String? chequeNumber,
+    String? eta,
   }) {
     return InvoiceModel(
       id: id ?? this.id,
@@ -168,6 +172,7 @@ class InvoiceModel {
       date: date ?? this.date,
       netBalance: netBalance ?? this.netBalance,
       isAdjusted: isAdjusted ?? this.isAdjusted,
+      eta: eta ?? this.eta,
     );
   }
 }

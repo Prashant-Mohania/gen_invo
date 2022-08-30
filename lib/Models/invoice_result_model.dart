@@ -38,7 +38,8 @@ class InvoiceResultModel {
       gst,
       email,
       address,
-      title;
+      title,
+      eta;
 
   InvoiceResultModel({
     this.id,
@@ -79,6 +80,7 @@ class InvoiceResultModel {
     this.hsn,
     this.isDefault,
     this.isAdjusted = 0,
+    this.eta = "",
   });
 
   factory InvoiceResultModel.fromJson(Map<String, dynamic> json) {
@@ -121,6 +123,7 @@ class InvoiceResultModel {
       hsn: json['hsn'],
       isDefault: json['isDefault'],
       isAdjusted: json['isAdjusted'],
+      eta: json['eta'] ?? "",
     );
   }
 
@@ -164,6 +167,7 @@ class InvoiceResultModel {
     data['hsn'] = hsn;
     data['isDefault'] = isDefault ?? 0;
     data['isAdjusted'] = isAdjusted ?? 0;
+    data['eta'] = eta;
     return data;
   }
 

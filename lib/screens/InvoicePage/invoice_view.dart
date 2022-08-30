@@ -3,6 +3,7 @@ import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/utils/save_file.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:whatsapp_share2/whatsapp_share2.dart';
 
 import '../../Models/invoice_result_model.dart';
 import '../../utils/invoice_generator.dart';
@@ -17,6 +18,7 @@ class InvoiceView extends StatefulWidget {
 
 class _InvoiceViewState extends State<InvoiceView> {
   bool isLoad = true;
+  String filePath = "";
   late InvoiceResultModel invoice;
 
   @override
@@ -27,12 +29,13 @@ class _InvoiceViewState extends State<InvoiceView> {
       invoice = value;
       SaveFile.saveFile(context, "${invoice.id}_${invoice.name}", invoice)
           .then((value) {
-        if (value) {
+        if (value[0]) {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Invoice saved")));
           setState(() {
             isLoad = false;
           });
+          filePath = value[1];
         } else {
           ScaffoldMessenger.of(context)
               .showSnackBar(const SnackBar(content: Text("Invoice not saved")));
@@ -49,6 +52,21 @@ class _InvoiceViewState extends State<InvoiceView> {
       appBar: AppBar(
         title: const Text('Invoice'),
         actions: [
+          IconButton(
+            onPressed: () {
+              if (invoice.mobile != null && invoice.mobile!.isNotEmpty) {
+                WhatsappShare.shareFile(
+                    filePath: [filePath], phone: "91${invoice.mobile}");
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text("No mobile number found"),
+                  ),
+                );
+              }
+            },
+            icon: const Icon(Icons.share),
+          ),
           IconButton(
             onPressed: () async {
               await Printing.layoutPdf(

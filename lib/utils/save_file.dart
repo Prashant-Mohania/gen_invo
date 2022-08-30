@@ -8,7 +8,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:permission_handler/permission_handler.dart';
 
 class SaveFile {
-  static Future<bool> saveFile(BuildContext context, String fileName,
+  static Future<List> saveFile(BuildContext context, String fileName,
       InvoiceResultModel invoiceData) async {
     Directory? directory;
     try {
@@ -38,7 +38,7 @@ class SaveFile {
           }
           directory = Directory(newPath);
         } else {
-          return false;
+          return [false, ""];
         }
       } else {}
       if (!await directory!.exists()) {
@@ -50,7 +50,7 @@ class SaveFile {
         await saveFile.writeAsBytes(await generateInvoice(invoiceData),
             flush: true);
 
-        return true;
+        return [true, saveFile.path];
       }
     } catch (e) {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -59,7 +59,7 @@ class SaveFile {
         ),
       );
     }
-    return false;
+    return [false, ""];
   }
 
   static Future<bool> deleteFile(BuildContext context, String fileName,
