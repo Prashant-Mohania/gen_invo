@@ -80,11 +80,11 @@ class InvoiceChangeNotifier extends ChangeNotifier {
         todayOutstandingInvoices.add(ele);
       }
       if (ele.isCash != 1) {
-        // amtBank = (bank + ele.netAmount!).toString();
+        amtBank = (bank + ele.netAmount!).toString();
         bank += ele.netAmount!;
         bankInvoices.add(ele);
       } else {
-        // amtCash = (cash + ele.netAmount!).toString();
+        amtCash = (cash + ele.netAmount!).toString();
         cash += ele.netAmount!;
         cashInvoices.add(ele);
       }

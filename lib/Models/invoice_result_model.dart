@@ -123,7 +123,7 @@ class InvoiceResultModel {
       hsn: json['hsn'],
       isDefault: json['isDefault'],
       isAdjusted: json['isAdjusted'],
-      eta: json['eta'],
+      eta: json['eta'] ?? "",
     );
   }
 
