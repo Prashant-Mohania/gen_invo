@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:gen_invo/Models/company_model.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/Models/item_change_notifier.dart';
 import 'package:gen_invo/screens/InvoicePage/add_invoice_page.dart';
 import 'package:gen_invo/screens/InvoicePage/edit_invoice_page.dart';
+import 'package:gen_invo/service/database_service.dart';
 import 'package:gen_invo/service/local_database.dart';
 import 'package:gen_invo/widgets/invoice_search.dart';
 import 'package:intl/intl.dart';
@@ -10,8 +12,23 @@ import 'package:provider/provider.dart';
 
 import '../../utils/save_file.dart';
 
-class InvoicePage extends StatelessWidget {
+class InvoicePage extends StatefulWidget {
   const InvoicePage({Key? key}) : super(key: key);
+
+  @override
+  State<InvoicePage> createState() => _InvoicePageState();
+}
+
+class _InvoicePageState extends State<InvoicePage> {
+  late CompanyModel company;
+
+  @override
+  void initState() {
+    super.initState();
+    DatabaseService.instance.getCompanyDetails().then((value) {
+      company = value.first;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -74,13 +91,12 @@ class InvoicePage extends StatelessWidget {
                   // reverse: true,
                   itemCount: invoices.lst.length,
                   itemBuilder: (context, index) {
+                    final invoice = invoices.lst[index];
                     return Card(
                       child: ListTile(
-                        tileColor: invoices.lst[index].eta!.isEmpty
-                            ? invoices.lst[index].id!.isEven
-                                ? Colors.white
-                                : Colors.grey[200]
-                            : Colors.grey,
+                        tileColor: invoice.id!.isEven
+                            ? Colors.white
+                            : Colors.grey[200],
                         onTap: () {
                           Provider.of<ItemChangeNotifier>(context,
                                   listen: false)
@@ -88,8 +104,7 @@ class InvoicePage extends StatelessWidget {
                           Navigator.push(
                             context,
                             MaterialPageRoute(
-                              builder: (_) =>
-                                  EditInvoicePage(invoice: invoices.lst[index]),
+                              builder: (_) => EditInvoicePage(invoice: invoice),
                             ),
                           );
                         },
@@ -97,37 +112,36 @@ class InvoicePage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                "${invoices.lst[index].id!} ${invoices.lst[index].name ?? "No Name"}"),
+                              "${invoice.id!} ${invoice.name ?? "No Name"}",
+                              style: TextStyle(
+                                color: invoice.eta!.isEmpty ? null : Colors.red,
+                              ),
+                            ),
                             Text(
-                              invoices.lst[index].isCash == 1 &&
-                                      invoices.lst[index].isUPI == 1 &&
-                                      invoices.lst[index].isCheque == 1
+                              invoice.isCash == 1 &&
+                                      invoice.isUPI == 1 &&
+                                      invoice.isCheque == 1
                                   ? "By Cash, UPI and Cheque"
-                                  : invoices.lst[index].isCash == 1 &&
-                                          invoices.lst[index].isUPI == 1
+                                  : invoice.isCash == 1 && invoice.isUPI == 1
                                       ? "By Cash and UPI"
-                                      : invoices.lst[index].isUPI == 1 &&
-                                              invoices.lst[index].isCheque == 1
+                                      : invoice.isUPI == 1 &&
+                                              invoice.isCheque == 1
                                           ? "By UPI and Cheque"
-                                          : invoices.lst[index].isCash == 1 &&
-                                                  invoices.lst[index]
-                                                          .isCheque ==
-                                                      1
+                                          : invoice.isCash == 1 &&
+                                                  invoice.isCheque == 1
                                               ? "By Cash and Cheque"
-                                              : invoices.lst[index].isCash == 1
+                                              : invoice.isCash == 1
                                                   ? "By Cash"
-                                                  : invoices.lst[index].isUPI ==
-                                                          1
+                                                  : invoice.isUPI == 1
                                                       ? "By UPI"
-                                                      : invoices.lst[index]
-                                                                  .isCheque ==
-                                                              1
+                                                      : invoice.isCheque == 1
                                                           ? "By Cheque"
-                                                          : invoices.lst[index]
-                                                                      .isRTGS ==
-                                                                  1
+                                                          : invoice.isRTGS == 1
                                                               ? "By RTGS"
                                                               : "",
+                              style: TextStyle(
+                                color: invoice.eta!.isEmpty ? null : Colors.red,
+                              ),
                             ),
                           ],
                         ),
@@ -135,53 +149,38 @@ class InvoicePage extends StatelessWidget {
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
                             Text(
-                                "₹ ${_currencyFormat(invoices.lst[index].netAmount!)}"),
+                              "₹ ${_currencyFormat(invoice.netAmount!)}",
+                              style: TextStyle(
+                                color: invoice.eta!.isEmpty ? null : Colors.red,
+                              ),
+                            ),
                             Text(
-                              invoices.lst[index].isAdjusted == 1
+                              invoice.isAdjusted == 1
                                   ? "Adjusted"
                                   : "Not Adjusted",
                               style: TextStyle(
-                                color: invoices.lst[index].isAdjusted == 1
+                                color: invoice.isAdjusted == 1
                                     ? Colors.green
                                     : Colors.red,
                               ),
                             ),
-                            Text(invoices.lst[index].date!),
+                            Text(
+                              invoice.date!,
+                              style: TextStyle(
+                                color: invoice.eta!.isEmpty ? null : Colors.red,
+                              ),
+                            ),
                           ],
                         ),
                         onLongPress: () {
                           deleteConfirm(context).then((value) {
                             if (value) {
-                              SaveFile.deleteFile(
-                                  context,
-                                  "${invoices.lst[index].id}_${invoices.lst[index].name}",
-                                  invoices.lst[index]);
-                              invoices.remove(invoices.lst[index]);
+                              SaveFile.deleteFile(context,
+                                  "${invoice.id}_${invoice.name}", invoice);
+                              invoices.remove(invoice);
                             }
                           });
                         },
-                        // leading: IconButton(
-                        //   onPressed: () {
-                        //     changeAdjusted(context, invoices.lst[index]);
-                        //   },
-                        //   icon: Icon(invoices.lst[index].isAdjusted == 1
-                        //       ? Icons.done
-                        //       : Icons.close),
-                        // ),
-                        // trailing: IconButton(
-                        //   onPressed: () {
-                        //     deleteConfirm(context).then((value) {
-                        //       if (value) {
-                        //         SaveFile.deleteFile(
-                        //             context,
-                        //             "${invoices.lst[index].id}_${invoices.lst[index].name}",
-                        //             invoices.lst[index]);
-                        //         invoices.remove(invoices.lst[index]);
-                        //       }
-                        //     });
-                        //   },
-                        //   icon: const Icon(Icons.delete),
-                        // ),
                       ),
                     );
                   },

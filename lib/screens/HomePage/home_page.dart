@@ -1,14 +1,33 @@
 import 'package:flutter/material.dart';
+import 'package:gen_invo/Models/company_model.dart';
 import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/constants/constants.dart';
 import 'package:gen_invo/screens/HomePage/invoices_list.dart';
+import 'package:gen_invo/service/database_service.dart';
 import 'package:gen_invo/widgets/my_drawer.dart';
 import 'package:intl/intl.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:whatsapp_share2/whatsapp_share2.dart';
 
-class HomePage extends StatelessWidget {
+class HomePage extends StatefulWidget {
   const HomePage({Key? key}) : super(key: key);
+
+  @override
+  State<HomePage> createState() => _HomePageState();
+}
+
+class _HomePageState extends State<HomePage> {
+  late CompanyModel company;
+
+  @override
+  void initState() {
+    super.initState();
+    DatabaseService.instance.getCompanyDetails().then((value) {
+      company = value.first;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -20,6 +39,7 @@ class HomePage extends StatelessWidget {
         drawer: const MyDrawer(),
         body: Consumer<InvoiceChangeNotifier>(
           builder: (context, value, child) {
+            value.getOutstandingInvoices();
             return FutureBuilder(
               future: value.getInvoiceListOfMonth(DateTime.now().month),
               builder: (context, snapshot) {
@@ -201,13 +221,13 @@ class HomePage extends StatelessWidget {
                         Container(
                           padding: const EdgeInsets.all(8.0),
                           child: const Text(
-                            "Today's outstandings :",
+                            "All Outstandings :",
                             style: TextStyle(
                                 fontSize: 30, fontWeight: FontWeight.bold),
                           ),
                         ),
                         const SizedBox(height: 10),
-                        ...value.todayOutstandingInvoices.map((e) {
+                        ...value.outstandingInvoices.map((e) {
                           return Card(
                             child: ListTile(
                               onLongPress: () async {
@@ -218,10 +238,14 @@ class HomePage extends StatelessWidget {
                                 }
                               },
                               onTap: () {
-                                WhatsappShare.share(
-                                    phone: "91${e.mobile}",
-                                    text:
-                                        "This is kindly reminder of invoice no. ${e.id} has oustanding balance of ₹${e.netBalance}");
+                                // WhatsappShare.share(
+                                //     phone: "91${e.mobile}",
+                                //     text:
+                                //         "Dear Customer\n\nThis is kindly reminder of invoice no. ${e.id} shows an oustanding balance of ₹${e.netBalance} of date ${e.eta}.\n\nPlease make the payment as soon as possible. If you already paid, contact to us.\n\nFrom:-\n\nRegards\n${company.name}");
+                                launchUrlString(
+                                  "https://wa.me/91${e.mobile}?text=Dear Customer\n\nThis is kindly reminder of invoice no. ${e.id} shows an oustanding balance of ₹${e.netBalance} of date ${e.eta}.\n\nPlease make the payment as soon as possible. If you already paid, contact to us.\n\nFrom:-\nJL AGRA",
+                                  mode: LaunchMode.externalApplication,
+                                );
                               },
                               title: Text("${e.id} - ${e.name!}"),
                               subtitle: Row(
@@ -254,7 +278,7 @@ class HomePage extends StatelessWidget {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: const Text("Delete Invoice"),
+          title: const Text("Update Invoice"),
           content: const Text("Are you sure you want to update the invoice?"),
           actions: [
             ElevatedButton(

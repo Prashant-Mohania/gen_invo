@@ -17,7 +17,7 @@ class InvoiceChangeNotifier extends ChangeNotifier {
   List<InvoiceResultModel> cashInvoices = <InvoiceResultModel>[];
   List<InvoiceResultModel> invoices = <InvoiceResultModel>[];
 
-  List<InvoiceResultModel> todayOutstandingInvoices = <InvoiceResultModel>[];
+  List<InvoiceResultModel> outstandingInvoices = <InvoiceResultModel>[];
 
   Future fetchInvoiceList() async {
     await dbClient.getInvoiceList().then((value) {
@@ -67,7 +67,7 @@ class InvoiceChangeNotifier extends ChangeNotifier {
   }
 
   getInvoiceListOfMonth(int month) async {
-    todayOutstandingInvoices.clear();
+    outstandingInvoices.clear();
     bankInvoices = [];
     cashInvoices = [];
     invoices = [];
@@ -75,10 +75,6 @@ class InvoiceChangeNotifier extends ChangeNotifier {
     final res = await dbClient.getInvoiceListOfMonth(month);
     invoices = res;
     for (var ele in res) {
-      if (ele.eta!.isNotEmpty &&
-          DateTime.now().isAfter(DateTime.parse(ele.eta!))) {
-        todayOutstandingInvoices.add(ele);
-      }
       if (ele.isCash != 1) {
         amtBank = (bank + ele.netAmount!).toString();
         bank += ele.netAmount!;
@@ -89,17 +85,16 @@ class InvoiceChangeNotifier extends ChangeNotifier {
         cashInvoices.add(ele);
       }
     }
-    // amtBank = bank.toString();
-    // amtCash = cash.toString();
-    // amt = (bank + cash).toString();
-    // final res1 = await dbClient.getTodayOutstandingInvoices();
-    // todayOutstandingInvoices = res1;
-    // // return res;
   }
 
-  getTodayOutstandingInvoices() async {
-    final res = await dbClient.getTodayOutstandingInvoices();
-    todayOutstandingInvoices = res;
+  getOutstandingInvoices() async {
+    final res = await dbClient.getInvoiceList();
+    for (var ele in res) {
+      if (ele.eta!.isNotEmpty &&
+          DateTime.now().isAfter(DateTime.parse(ele.eta!))) {
+        outstandingInvoices.add(ele);
+      }
+    }
     // notifyListeners();
   }
 
