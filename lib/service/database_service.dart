@@ -244,7 +244,7 @@ ORDER BY invoice.id DESC
     return lst.map((e) => InvoiceResultModel.fromJson(e)).toList();
   }
 
-  Future<List<InvoiceResultModel>> getTodayOutstandingInvoices() async {
+  Future<List<InvoiceResultModel>> getoutstandingInvoices() async {
     final db = await instance.database;
     final res = await db.rawQuery("""
 SELECT * FROM invoice
