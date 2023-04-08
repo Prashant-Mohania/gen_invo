@@ -3,9 +3,13 @@ import 'package:gen_invo/Models/invoice_change_notifier.dart';
 import 'package:gen_invo/utils/save_file.dart';
 import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:url_launcher/url_launcher_string.dart';
 import 'package:whatsapp_share2/whatsapp_share2.dart';
 
+import '../../Models/company_model.dart';
 import '../../Models/invoice_result_model.dart';
+import '../../service/database_service.dart';
 import '../../utils/invoice_generator.dart';
 
 class InvoiceView extends StatefulWidget {
@@ -75,6 +79,29 @@ class _InvoiceViewState extends State<InvoiceView> {
             icon: const Icon(Icons.print),
           ),
         ],
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: () async {
+          if (invoice.mobile != null && invoice.mobile!.isNotEmpty) {
+            final res = await DatabaseService.instance.getCompanyDetails();
+            CompanyModel companyData = res[0];
+            launchUrlString(
+              "https://wa.me/91${invoice.mobile}?text=Thanks for shopping with us\n${invoice.name}\nRegards from\n${companyData.name}",
+              mode: LaunchMode.externalApplication,
+            );
+            // WhatsappShare.share(
+            //     phone: "91${invoice.mobile}",
+            //     text:
+            //         "Thanks for shopping with us\n${invoice.name}\nRegards from\n${companyData.name}");
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text("No mobile number found"),
+              ),
+            );
+          }
+        },
+        child: const Icon(Icons.whatsapp),
       ),
       body: isLoad
           ? const Center(

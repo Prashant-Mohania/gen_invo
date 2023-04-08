@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:gen_invo/screens/BackupRestorePage/backup_restore_page.dart';
 import 'package:gen_invo/screens/InvoicePage/invoice_page.dart';
 
 import '../screens/ItemPage/item_page.dart';
@@ -52,6 +53,16 @@ class MyDrawer extends StatelessWidget {
               Navigator.pop(context);
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const InvoicePage()));
+              // Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: const Text("Backup/Restore"),
+            leading: const Icon(Icons.add),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (_) => const BackupRestorePage()));
               // Navigator.pop(context);
             },
           ),
