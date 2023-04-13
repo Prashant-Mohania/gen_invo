@@ -4,6 +4,7 @@ import 'dart:io';
 
 import 'package:file_picker/file_picker.dart';
 import 'package:flutter/material.dart';
+import 'package:gen_invo/service/database_service.dart';
 import 'package:path/path.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:sqflite/sqflite.dart';
@@ -21,7 +22,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title:const Text("Backup/Restore"),
+        title: const Text("Backup/Restore"),
       ),
       body: Center(
         child: Column(
@@ -31,7 +32,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
             ElevatedButton(
               onPressed: () async {
                 final dbFolder = await getDatabasesPath();
-                File source1 = File('$dbFolder/doggie_database.db');
+                File source1 = File('$dbFolder/GenInvo.db');
 
                 Directory copyTo =
                     Directory("storage/emulated/0/GenInvo/Backup");
@@ -54,7 +55,7 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                   }
                 }
 
-                String newPath = "${copyTo.path}/doggie_database.db";
+                String newPath = "${copyTo.path}/GenInvo.db";
                 await source1.copy(newPath);
 
                 setState(() {
@@ -86,14 +87,36 @@ class _BackupRestorePageState extends State<BackupRestorePage> {
                   File source = File(result.files.single.path!);
                   await source.copy(dbPath);
                   setState(() {
-                  message = 'Successfully Restored DB';
-                });
+                    message = 'Successfully Restored DB';
+                  });
                 } else {
                   // User canceled the picker
-
                 }
               },
               child: const Text('Restore DB'),
+            ),
+            ElevatedButton(
+              onPressed: () async {
+                var databasesPath = await getDatabasesPath();
+                var dbPath = join(databasesPath, 'GenInvo.db');
+                if (!(await Permission.storage.isGranted)) {
+                  await Permission.storage.request();
+                }
+                FilePickerResult? result =
+                    await FilePicker.platform.pickFiles();
+
+                if (result != null) {
+                  File source = File(result.files.single.path!);
+                  await source.copy(dbPath);
+                  await DatabaseService.instance.startNewYear();
+                  setState(() {
+                    message = 'Successfully Restored DB';
+                  });
+                } else {
+                  // User canceled the picker
+                }
+              },
+              child: const Text("Start New Year"),
             ),
           ],
         ),

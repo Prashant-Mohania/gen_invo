@@ -123,6 +123,8 @@ class SaveFile {
       final status = await Permission.storage.isGranted &&
           await Permission.manageExternalStorage.isGranted;
       if (!status) {
+        await Permission.storage.request();
+        await Permission.manageExternalStorage.request();
         final status = await Permission.storage.request().isGranted &&
             await Permission.manageExternalStorage.request().isGranted;
         if (status) {

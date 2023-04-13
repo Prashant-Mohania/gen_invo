@@ -8,8 +8,9 @@ import '../utils/save_file.dart';
 
 class InvoiceSearch extends SearchDelegate {
   final List<InvoiceResultModel> invoices;
+  final bool isFromInvoicePage;
 
-  InvoiceSearch(this.invoices);
+  InvoiceSearch(this.invoices, {this.isFromInvoicePage = true});
   @override
   List<Widget> buildActions(BuildContext context) {
     return [
@@ -58,8 +59,10 @@ class InvoiceSearch extends SearchDelegate {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              InvoiceView(invoiceId: suggestionList[index].id!),
+                          builder: (_) => InvoiceView(
+                            invoiceId: suggestionList[index].id!,
+                            isFromInvoicePage: isFromInvoicePage,
+                          ),
                         ),
                       );
                     },
@@ -133,24 +136,38 @@ class InvoiceSearch extends SearchDelegate {
                       ],
                     ),
                     onLongPress: () {
-                      deleteConfirm(context).then((value) {
-                        if (value) {
-                          SaveFile.deleteFile(
-                              context,
-                              "${suggestionList[index].id}_${suggestionList[index].name}",
-                              suggestionList[index]);
-                          invoices.remove(suggestionList[index]);
-                        }
-                      });
+                      if (isFromInvoicePage) {
+                        deleteConfirm(context).then((value) {
+                          if (value) {
+                            SaveFile.deleteFile(
+                                context,
+                                "${suggestionList[index].id}_${suggestionList[index].name}",
+                                suggestionList[index]);
+                            invoices.remove(suggestionList[index]);
+                          }
+                        });
+                      }
                     },
                     onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (_) =>
-                              EditInvoicePage(invoice: suggestionList[index]),
-                        ),
-                      );
+                      if (isFromInvoicePage) {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) =>
+                                EditInvoicePage(invoice: suggestionList[index]),
+                          ),
+                        );
+                      } else {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (_) => InvoiceView(
+                              invoiceId: suggestionList[index].id!,
+                              isFromInvoicePage: isFromInvoicePage,
+                            ),
+                          ),
+                        );
+                      }
                     },
                   ),
                 )

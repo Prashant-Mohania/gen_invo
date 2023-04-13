@@ -90,12 +90,12 @@ BEGIN
         BLOCK "040904e4"
         BEGIN
             VALUE "CompanyName", "com.example" "\0"
-            VALUE "FileDescription", "gen_invo" "\0"
+            VALUE "FileDescription", "New Blueberry" "\0"
             VALUE "FileVersion", VERSION_AS_STRING "\0"
-            VALUE "InternalName", "gen_invo" "\0"
+            VALUE "InternalName", "New Blueberry" "\0"
             VALUE "LegalCopyright", "Copyright (C) 2022 com.example. All rights reserved." "\0"
             VALUE "OriginalFilename", "gen_invo.exe" "\0"
-            VALUE "ProductName", "gen_invo" "\0"
+            VALUE "ProductName", "New Blueberry" "\0"
             VALUE "ProductVersion", VERSION_AS_STRING "\0"
         END
     END

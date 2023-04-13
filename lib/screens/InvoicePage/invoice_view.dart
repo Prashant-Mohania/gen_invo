@@ -14,7 +14,10 @@ import '../../utils/invoice_generator.dart';
 
 class InvoiceView extends StatefulWidget {
   final int invoiceId;
-  const InvoiceView({Key? key, required this.invoiceId}) : super(key: key);
+  final bool isFromInvoicePage;
+  const InvoiceView(
+      {Key? key, required this.invoiceId, this.isFromInvoicePage = true})
+      : super(key: key);
 
   @override
   State<InvoiceView> createState() => _InvoiceViewState();
@@ -27,26 +30,49 @@ class _InvoiceViewState extends State<InvoiceView> {
 
   @override
   void initState() {
-    Provider.of<InvoiceChangeNotifier>(context, listen: false)
-        .getInvoiceById(widget.invoiceId)
-        .then((value) {
-      invoice = value;
-      SaveFile.saveFile(context, "${invoice.id}_${invoice.name}", invoice)
+    if (widget.isFromInvoicePage) {
+      Provider.of<InvoiceChangeNotifier>(context, listen: false)
+          .getInvoiceById(widget.invoiceId)
           .then((value) {
-        if (value[0]) {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Invoice saved")));
-          setState(() {
-            isLoad = false;
-          });
-          filePath = value[1];
-        } else {
-          ScaffoldMessenger.of(context)
-              .showSnackBar(const SnackBar(content: Text("Invoice not saved")));
-          Navigator.pop(context);
-        }
+        invoice = value;
+        SaveFile.saveFile(context, "${invoice.id}_${invoice.name}", invoice)
+            .then((value) {
+          if (value[0]) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text("Invoice saved")));
+            setState(() {
+              isLoad = false;
+            });
+            filePath = value[1];
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Invoice not saved")));
+            Navigator.pop(context);
+          }
+        });
       });
-    });
+    } else {
+      Provider.of<InvoiceChangeNotifier>(context, listen: false)
+          .getLastYearInvoiceById(widget.invoiceId)
+          .then((value) {
+        invoice = value;
+        SaveFile.saveFile(context, "${invoice.id}_${invoice.name}", invoice)
+            .then((value) {
+          if (value[0]) {
+            ScaffoldMessenger.of(context)
+                .showSnackBar(const SnackBar(content: Text("Invoice saved")));
+            setState(() {
+              isLoad = false;
+            });
+            filePath = value[1];
+          } else {
+            ScaffoldMessenger.of(context).showSnackBar(
+                const SnackBar(content: Text("Invoice not saved")));
+            Navigator.pop(context);
+          }
+        });
+      });
+    }
     super.initState();
   }
 
@@ -101,7 +127,7 @@ class _InvoiceViewState extends State<InvoiceView> {
             );
           }
         },
-        child: const Icon(Icons.whatsapp),
+        child: const Icon(Icons.chat),
       ),
       body: isLoad
           ? const Center(

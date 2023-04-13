@@ -3,6 +3,7 @@ import 'package:gen_invo/screens/BackupRestorePage/backup_restore_page.dart';
 import 'package:gen_invo/screens/InvoicePage/invoice_page.dart';
 
 import '../screens/ItemPage/item_page.dart';
+import '../screens/LastYearInvoice/last_year_invoice_view.dart';
 import '../screens/PartiesPage/parties_page.dart';
 
 class MyDrawer extends StatelessWidget {
@@ -64,6 +65,17 @@ class MyDrawer extends StatelessWidget {
               Navigator.push(context,
                   MaterialPageRoute(builder: (_) => const BackupRestorePage()));
               // Navigator.pop(context);
+            },
+          ),
+          ListTile(
+            title: const Text("Last Year's Data"),
+            leading: const Icon(Icons.info),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                      builder: (_) => const LastYearInvoicePage()));
             },
           ),
         ],

@@ -6,6 +6,7 @@ import 'invoice_result_model.dart';
 
 class InvoiceChangeNotifier extends ChangeNotifier {
   List<InvoiceResultModel> lst = <InvoiceResultModel>[];
+  List<InvoiceResultModel> lastYearLst = <InvoiceResultModel>[];
   final DatabaseService dbClient = DatabaseService.instance;
 
   // month invoices data
@@ -24,6 +25,17 @@ class InvoiceChangeNotifier extends ChangeNotifier {
       lst = value;
       notifyListeners();
     });
+  }
+
+  Future fetchLastYearInvoiceList() async {
+    try {
+      await dbClient.getLastYearInvoiceList().then((value) {
+        lastYearLst = value;
+        notifyListeners();
+      });
+    } catch (e) {
+      // print(e);
+    }
   }
 
   Future add(InvoiceModel invoice) async {
@@ -58,6 +70,11 @@ class InvoiceChangeNotifier extends ChangeNotifier {
 
   getInvoiceById(int id) async {
     final res = await dbClient.getInvoiceById(id);
+    return res;
+  }
+
+  getLastYearInvoiceById(int id) async {
+    final res = await dbClient.getLastYearInvoiceById(id);
     return res;
   }
 

@@ -6,6 +6,7 @@ import 'package:path/path.dart';
 import '../Models/company_model.dart';
 import '../Models/invoice_model.dart';
 import '../Models/invoice_result_model.dart';
+import 'local_database.dart';
 
 class DatabaseService {
   static final DatabaseService instance = DatabaseService._init();
@@ -28,8 +29,42 @@ class DatabaseService {
       path,
       version: 2,
       onCreate: _createDB,
-      onUpgrade: (db, oldVersion, newVersion) {
-        db.execute('ALTER TABLE Invoice ADD COLUMN eta TEXT');
+      onUpgrade: (db, oldVersion, newVersion) async {
+        // db.execute('ALTER TABLE Invoice ADD COLUMN eta TEXT');
+//         await db.execute('ALTER TABLE Invoice RENAME TO OldInvoice');
+//         await db.execute('''
+// CREATE TABLE invoice (
+//   id INTEGER NOT NULL PRIMARY KEY,
+//   pId INTEGER NOT NULL,
+//   iId INTEGER NOT NULL,
+//   date TEXT NOT NULL,
+//   weightInGrams REAL NOT NULL,
+//   ratePerGram REAL NOT NULL,
+//   totalCost REAL NOT NULL,
+//   cgst REAL NOT NULL,
+//   sgst REAL NOT NULL,
+//   igst REAL NOT NULL,
+//   totalAmountWithoutRounding REAL NOT NULL,
+//   totalAmountWithRounding INTEGER NOT NULL,
+//   discount INTEGER,
+//   isCash INTEGER NOT NULL,
+//   receivedInCash INTEGER,
+//   isUPI INTEGER NOT NULL,
+//   receivedInUPI INTEGER NOT NULL,
+//   isCheque INTEGER NOT NULL,
+//   bankName TEXT NOT NULL,
+//   chequeNumber TEXT NOT NULL,
+//   receivedInCheque INTEGER NOT NULL,
+//   isRTGS INTEGER NOT NULL,
+//   rtgsState TEXT NOT NULL,
+//   netAmount INTEGER NOT NULL,
+//   netBalance INTEGER NOT NULL,
+//   isAdjusted INTEGER NOT NULL,
+//   eta TEXT
+//   )
+// ''');
+//         LocalDatabase.setInvoiceCounter("invoiceNo", 0);
+        // db.execute('DELETE FROM invoice');
       },
     );
   }
@@ -105,6 +140,44 @@ CREATE TABLE company (
   bankAddress TEXT NOT NULL
   )
 ''');
+  }
+
+  // ------------------------------------------------- Start New Year CRUD -------------------------------
+  Future<void> startNewYear() async {
+    final db = await instance.database;
+    await db.execute('ALTER TABLE Invoice RENAME TO OldInvoice');
+    await db.execute('''
+CREATE TABLE invoice (
+  id INTEGER NOT NULL PRIMARY KEY,
+  pId INTEGER NOT NULL,
+  iId INTEGER NOT NULL,
+  date TEXT NOT NULL,
+  weightInGrams REAL NOT NULL,
+  ratePerGram REAL NOT NULL,
+  totalCost REAL NOT NULL, 
+  cgst REAL NOT NULL,
+  sgst REAL NOT NULL,
+  igst REAL NOT NULL,
+  totalAmountWithoutRounding REAL NOT NULL,
+  totalAmountWithRounding INTEGER NOT NULL,
+  discount INTEGER,
+  isCash INTEGER NOT NULL,
+  receivedInCash INTEGER,
+  isUPI INTEGER NOT NULL,
+  receivedInUPI INTEGER NOT NULL,
+  isCheque INTEGER NOT NULL,
+  bankName TEXT NOT NULL,
+  chequeNumber TEXT NOT NULL,
+  receivedInCheque INTEGER NOT NULL,
+  isRTGS INTEGER NOT NULL,
+  rtgsState TEXT NOT NULL,
+  netAmount INTEGER NOT NULL,
+  netBalance INTEGER NOT NULL,
+  isAdjusted INTEGER NOT NULL,
+  eta TEXT
+  )
+''');
+    await LocalDatabase.setInvoiceCounter("invoiceNo", 0);
   }
 
   // ------------------------------------------------- Party CRUD -------------------------------
@@ -273,5 +346,28 @@ WHERE eta <= '${DateTime.now().toString().split(" ")[0]}'
     final db = await instance.database;
     final id = await db.insert("company", company.toJson());
     return company.copyWith(id: id);
+  }
+
+  // ------------------------------------------- Last Year Invoice CRUD --------------------------------
+  Future<List<InvoiceResultModel>> getLastYearInvoiceList() async {
+    final db = await instance.database;
+    final res = await db.rawQuery("""
+SELECT * FROM OldInvoice invoice
+LEFT JOIN party ON invoice.pId = party.partyId
+LEFT JOIN item ON invoice.iId = item.itemId
+ORDER BY invoice.id DESC
+""");
+    return res.map((e) => InvoiceResultModel.fromJson(e)).toList();
+  }
+
+  Future<InvoiceResultModel> getLastYearInvoiceById(int id) async {
+    final db = await instance.database;
+    final res = await db.rawQuery("""
+SELECT * FROM OldInvoice invoice
+LEFT JOIN party ON invoice.pId = party.partyId
+LEFT JOIN item ON invoice.iId = item.itemId
+WHERE id = $id
+""");
+    return res.map((e) => InvoiceResultModel.fromJson(e)).toList().first;
   }
 }
