@@ -19,7 +19,8 @@ class InvoiceResultModel {
       itemId,
       hsn,
       isDefault,
-      isAdjusted;
+      isAdjusted,
+      isGold;
   double? weightInGrams,
       ratePerGram,
       totalCost,
@@ -81,6 +82,7 @@ class InvoiceResultModel {
     this.isDefault,
     this.isAdjusted = 0,
     this.eta = "",
+    this.isGold = 0,
   });
 
   factory InvoiceResultModel.fromJson(Map<String, dynamic> json) {
@@ -124,6 +126,7 @@ class InvoiceResultModel {
       isDefault: json['isDefault'],
       isAdjusted: json['isAdjusted'],
       eta: json['eta'] ?? "",
+      isGold: json['isGold'],
     );
   }
 
@@ -168,6 +171,7 @@ class InvoiceResultModel {
     data['isDefault'] = isDefault ?? 0;
     data['isAdjusted'] = isAdjusted ?? 0;
     data['eta'] = eta;
+    data['isGold'] = isGold ?? 0;
     return data;
   }
 

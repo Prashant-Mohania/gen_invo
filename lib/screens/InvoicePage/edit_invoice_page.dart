@@ -123,6 +123,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
       itemId: widget.invoice.iId,
       title: widget.invoice.title.toString(),
       hsn: widget.invoice.hsn,
+      isGold: widget.invoice.isGold,
     );
     isAdjusted = widget.invoice.isAdjusted == 1 ? true : false;
     isAdj = isAdjusted ? IsAdjusted.adjusted : IsAdjusted.notAdjusted;
@@ -140,7 +141,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
     partyNameController.text =
         "${widget.invoice.name} / ${widget.invoice.city}";
     weightController.text = widget.invoice.weightInGrams.toString();
-    rateController.text = (widget.invoice.ratePerGram! * 1000).toString();
+    rateController.text =
+        (widget.invoice.ratePerGram! * (defaultItem.isGold == 0 ? 1000 : 1))
+            .toString();
     totalCostController.text = widget.invoice.totalCost!.toStringAsFixed(2);
     subTotalController.text = widget.invoice.totalCost!.toStringAsFixed(2);
 
@@ -426,8 +429,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       ? double.tryParse(rateController.text)!
                                       : 0.0;
 
-                                  double subAmnt = items
-                                      .subTotalAmount(weight * rate / 1000);
+                                  double subAmnt = items.subTotalAmount(weight *
+                                      rate /
+                                      (!(defaultItem.isGold == 1) ? 1000 : 1));
                                   totalCostController.text =
                                       subAmnt.toStringAsFixed(2);
 
@@ -463,8 +467,10 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                 controller: rateController,
                                 validator: (val) =>
                                     val!.isEmpty ? "Enter Rate" : null,
-                                decoration: const InputDecoration(
-                                  hintText: "Rate in kg",
+                                decoration: InputDecoration(
+                                  hintText: defaultItem.isGold == 1
+                                      ? "Rate in GM"
+                                      : "Rate in KG",
                                 ),
                                 onChanged: (val) {
                                   double weight =
@@ -475,8 +481,9 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                       ? double.tryParse(rateController.text)!
                                       : 0.0;
 
-                                  double subAmnt = items
-                                      .subTotalAmount(weight * rate / 1000);
+                                  double subAmnt = items.subTotalAmount(weight *
+                                      rate /
+                                      (!(defaultItem.isGold == 1) ? 1000 : 1));
                                   totalCostController.text =
                                       subAmnt.toStringAsFixed(2);
 
@@ -886,7 +893,7 @@ class _AddInvoiceState extends State<EditInvoicePage> {
                                     double.tryParse(weightController.text)!,
                                 ratePerGram:
                                     double.tryParse(rateController.text)! /
-                                        1000,
+                                        (defaultItem.isGold == 1 ? 1 : 1000),
                                 totalCost:
                                     double.tryParse(totalCostController.text)!,
                                 cgst: double.tryParse(csgtController.text)!,

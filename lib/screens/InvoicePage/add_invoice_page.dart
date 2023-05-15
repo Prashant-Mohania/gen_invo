@@ -488,8 +488,9 @@ class _AddInvoiceState extends State<AddInvoice> {
                                       ? double.tryParse(rateController.text)!
                                       : 0.0;
 
-                                  double subAmnt = items
-                                      .subTotalAmount(weight * rate / 1000);
+                                  double subAmnt = items.subTotalAmount(weight *
+                                      rate /
+                                      (!(defaultItem.isGold == 1) ? 1000 : 1));
                                   totalCostController.text =
                                       subAmnt.toStringAsFixed(2);
 
@@ -525,8 +526,10 @@ class _AddInvoiceState extends State<AddInvoice> {
                                 controller: rateController,
                                 validator: (val) =>
                                     val!.isEmpty ? "Enter Rate" : null,
-                                decoration: const InputDecoration(
-                                  hintText: "Rate in kg",
+                                decoration: InputDecoration(
+                                  hintText: defaultItem.isGold == 1
+                                      ? "Rate in GM"
+                                      : "Rate in KG",
                                 ),
                                 onChanged: (val) {
                                   double weight =
@@ -538,8 +541,9 @@ class _AddInvoiceState extends State<AddInvoice> {
                                           0
                                       : 0.0;
 
-                                  double subAmnt = items
-                                      .subTotalAmount(weight * rate / 1000);
+                                  double subAmnt = items.subTotalAmount(weight *
+                                      rate /
+                                      (defaultItem.isGold == 0 ? 1000 : 1));
                                   totalCostController.text =
                                       subAmnt.toStringAsFixed(2);
 
@@ -970,7 +974,7 @@ class _AddInvoiceState extends State<AddInvoice> {
                                     double.tryParse(weightController.text)!,
                                 ratePerGram:
                                     double.tryParse(rateController.text)! /
-                                        1000,
+                                        (defaultItem.isGold == 1 ? 1 : 1000),
                                 totalCost:
                                     double.tryParse(totalCostController.text)!,
                                 cgst: double.tryParse(csgtController.text)!,

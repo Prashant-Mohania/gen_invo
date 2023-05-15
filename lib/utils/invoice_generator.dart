@@ -21,7 +21,7 @@ Future<Uint8List> generateInvoice(InvoiceResultModel invoiceData) async {
       invoiceData.title!,
       invoiceData.hsn.toString(),
       invoiceData.weightInGrams!,
-      invoiceData.ratePerGram! * 1000,
+      invoiceData.ratePerGram! * (invoiceData.isGold == 0 ? 1000 : 1),
       invoiceData.totalCost!,
     ),
   ];
@@ -74,7 +74,7 @@ class Invoice {
               children: [
                 _buildHeader(context, invoiceData, companyData),
                 _contentHeader(context, invoiceData),
-                _contentTable(context),
+                _contentTable(context, invoiceData.isGold!),
                 _contentFooter(context, invoiceData, companyData),
                 _termsAndConditions(context, companyData),
               ],
@@ -86,6 +86,19 @@ class Invoice {
 
     // Return the PDF file content
     return doc.save();
+  }
+
+  String _getFinancialYear(String invoiceDate) {
+    String finYear = "";
+    var date = DateTime.parse(
+        "${invoiceDate.split("-")[2]}-${invoiceDate.split("-")[1]}-${invoiceDate.split("-")[0]}");
+    if (date.isAfter(DateTime(date.year, 3, 31)) &&
+        date.isBefore(DateTime(date.year + 1, 4, 1))) {
+      finYear = "FY${date.year % 100}-${(date.year % 100) + 1}";
+    } else {
+      finYear = "FY${(date.year % 100) - 1}-${date.year % 100}";
+    }
+    return finYear;
   }
 
   pw.Widget _buildHeader(pw.Context context, InvoiceResultModel invoiceData,
@@ -153,7 +166,8 @@ class Invoice {
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 5),
-                      child: pw.Text(invoiceData.id.toString()),
+                      child: pw.Text(
+                          "${_getFinancialYear(invoiceData.date!)}/${invoiceData.id}"),
                     ),
                     pw.Padding(
                       padding: const pw.EdgeInsets.only(top: 5),
@@ -812,6 +826,10 @@ class Invoice {
             bottom: pw.BorderSide(width: 01),
             verticalInside: pw.BorderSide(width: 01),
           ),
+          columnWidths: {
+            0: const pw.FlexColumnWidth(1),
+            1: const pw.FlexColumnWidth(1),
+          },
           children: [
             pw.TableRow(
               children: [
@@ -825,7 +843,7 @@ class Invoice {
                 pw.Container(
                   padding: const pw.EdgeInsets.all(5),
                   child: pw.Text(
-                    "For Hiralal & Brothers",
+                    companyData.name!,
                     textAlign: pw.TextAlign.center,
                   ),
                 ),
@@ -843,13 +861,13 @@ class Invoice {
     );
   }
 
-  pw.Widget _contentTable(pw.Context context) {
-    const tableHeaders = [
+  pw.Widget _contentTable(pw.Context context, int isGold) {
+    var tableHeaders = [
       'SNO ',
       'DESCRIPTION OF GOODS',
       'HSN CODE',
       'Weight(In GM)',
-      'Rate(per KG)',
+      isGold == 0 ? 'Rate(per KG)' : 'Rate(per GM)',
       'Taxable-Value',
     ];
     return pw.Expanded(

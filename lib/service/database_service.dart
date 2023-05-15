@@ -27,44 +27,13 @@ class DatabaseService {
 
     return await openDatabase(
       path,
-      version: 2,
+      version: 3,
       onCreate: _createDB,
       onUpgrade: (db, oldVersion, newVersion) async {
-        // db.execute('ALTER TABLE Invoice ADD COLUMN eta TEXT');
-//         await db.execute('ALTER TABLE Invoice RENAME TO OldInvoice');
-//         await db.execute('''
-// CREATE TABLE invoice (
-//   id INTEGER NOT NULL PRIMARY KEY,
-//   pId INTEGER NOT NULL,
-//   iId INTEGER NOT NULL,
-//   date TEXT NOT NULL,
-//   weightInGrams REAL NOT NULL,
-//   ratePerGram REAL NOT NULL,
-//   totalCost REAL NOT NULL,
-//   cgst REAL NOT NULL,
-//   sgst REAL NOT NULL,
-//   igst REAL NOT NULL,
-//   totalAmountWithoutRounding REAL NOT NULL,
-//   totalAmountWithRounding INTEGER NOT NULL,
-//   discount INTEGER,
-//   isCash INTEGER NOT NULL,
-//   receivedInCash INTEGER,
-//   isUPI INTEGER NOT NULL,
-//   receivedInUPI INTEGER NOT NULL,
-//   isCheque INTEGER NOT NULL,
-//   bankName TEXT NOT NULL,
-//   chequeNumber TEXT NOT NULL,
-//   receivedInCheque INTEGER NOT NULL,
-//   isRTGS INTEGER NOT NULL,
-//   rtgsState TEXT NOT NULL,
-//   netAmount INTEGER NOT NULL,
-//   netBalance INTEGER NOT NULL,
-//   isAdjusted INTEGER NOT NULL,
-//   eta TEXT
-//   )
-// ''');
-//         LocalDatabase.setInvoiceCounter("invoiceNo", 0);
-        // db.execute('DELETE FROM invoice');
+        if (newVersion > 2) {
+          await db.execute('''ALTER TABLE item
+        ADD COLUMN isGold INTEGER NOT NULL default 0''');
+        }
       },
     );
   }
@@ -88,7 +57,8 @@ CREATE TABLE item (
   itemId INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   title TEXT NOT NULL,
   hsn INTEGER NOT NULL,
-  isDefault INTEGER NOT NULL
+  isDefault INTEGER NOT NULL,
+  isGold INTEGER NOT NULL default 0
   )
 ''');
 

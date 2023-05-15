@@ -19,6 +19,7 @@ class _EditItemPageState extends State<EditItemPage> {
   TextEditingController hsnController = TextEditingController();
 
   bool isLoad = false;
+  bool isGold = false;
 
   @override
   void initState() {
@@ -68,6 +69,20 @@ class _EditItemPageState extends State<EditItemPage> {
                   },
                 ),
                 const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Text("Is Gold :- ", style: TextStyle(fontSize: 20)),
+                    Switch(
+                      value: isGold,
+                      onChanged: (val) {
+                        setState(() {
+                          isGold = val;
+                        });
+                      },
+                    )
+                  ],
+                ),
+                const SizedBox(height: 20),
                 CustomButton(
                   text: "Edit Item",
                   callback: () {
@@ -81,6 +96,7 @@ class _EditItemPageState extends State<EditItemPage> {
                         itemId: widget.item.itemId,
                         title: nameController.text,
                         hsn: int.tryParse(hsnController.text),
+                        isGold: isGold ? 1 : 0,
                       ))
                           .then((value) {
                         setState(() {

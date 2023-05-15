@@ -19,6 +19,7 @@ class _AddItemPageState extends State<AddItemPage> {
   TextEditingController hsnController = TextEditingController();
 
   bool isLoad = false;
+  bool isGold = false;
 
   @override
   Widget build(BuildContext context) {
@@ -62,6 +63,20 @@ class _AddItemPageState extends State<AddItemPage> {
                   },
                 ),
                 const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Text("Is Gold :- ", style: TextStyle(fontSize: 20)),
+                    Switch(
+                      value: isGold,
+                      onChanged: (val) {
+                        setState(() {
+                          isGold = val;
+                        });
+                      },
+                    )
+                  ],
+                ),
+                const SizedBox(height: 20),
                 CustomButton(
                   callback: () {
                     if (_formkey.currentState!.validate()) {
@@ -74,6 +89,7 @@ class _AddItemPageState extends State<AddItemPage> {
                         title: nameController.text.toTitleCase(),
                         hsn: int.tryParse(hsnController.text),
                         isDefault: 0,
+                        isGold: isGold ? 1 : 0,
                       ))
                           .then((value) {
                         setState(() {
